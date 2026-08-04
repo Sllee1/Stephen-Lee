@@ -17,8 +17,9 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.nutritiontracker.app",
       "infoPlist": {
-        "NSCameraUsageDescription": "Used to photograph meals for nutrition analysis and to log a build photo for a BMI estimate.",
-        "NSPhotoLibraryUsageDescription": "Used to pick meal, build, or technique-check photos/videos from your library."
+        "NSCameraUsageDescription": "Used to photograph meals for nutrition analysis, log a build photo for a BMI estimate, and record technique-check videos.",
+        "NSPhotoLibraryUsageDescription": "Used to pick meal, build, or technique-check photos/videos from your library.",
+        "NSMicrophoneUsageDescription": "Used to record audio when capturing a technique-check video."
       }
     },
     "android": {
@@ -27,11 +28,19 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FBF9F4"
       },
-      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE"]
+      "permissions": ["CAMERA", "RECORD_AUDIO", "READ_EXTERNAL_STORAGE"]
     },
     "plugins": [
       "expo-router",
       "expo-camera",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Used to pick meal, build, or technique-check photos/videos from your library.",
+          "cameraPermission": "Used to photograph meals for nutrition analysis, log a build photo for a BMI estimate, and record technique-check videos.",
+          "microphonePermission": "Used to record audio when capturing a technique-check video."
+        }
+      ],
       [
         "expo-notifications",
         {

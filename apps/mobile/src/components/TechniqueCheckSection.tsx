@@ -30,23 +30,22 @@ export function TechniqueCheckSection() {
       return;
     }
 
-    const result = fromCamera
+    const pickerResult = fromCamera
       ? await ImagePicker.launchCameraAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Videos, videoMaxDuration: 60 })
       : await ImagePicker.launchImageLibraryAsync({ mediaTypes: ImagePicker.MediaTypeOptions.Videos });
 
-    if (result.canceled) return;
-    const asset = result.assets[0];
-    if (!asset.duration) {
-      Alert.alert("Couldn't read that video", "This clip didn't report a length — try a different file.");
-      return;
-    }
+    if (pickerResult.canceled) return;
+    const asset = pickerResult.assets[0];
 
     setResult(null);
     setVideoUri(asset.uri);
     setPreviewFrames([]);
     setExtracting(true);
     try {
-      const { frames, cappedAt: capped } = await extractVideoFrames(asset.uri, asset.duration);
+      // asset.duration is frequently null/undefined depending on picker and
+      // platform (not just for malformed videos) — extractVideoFrames
+      // handles that itself rather than us gating on it here.
+      const { frames, cappedAt: capped } = await extractVideoFrames(asset.uri, asset.duration ?? null);
       setPreviewFrames(frames);
       setCappedAt(capped);
     } catch (err) {
