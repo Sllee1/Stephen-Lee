@@ -4,6 +4,8 @@ import { GOALS, PHYSIQUES, computeTargets, type Goal } from "@nutrition-app/shar
 import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { AdBanner } from "../../src/components/AdBanner";
+import { MealPlanBuilder } from "../../src/components/MealPlanBuilder";
+import { WorkoutPlanBuilder } from "../../src/components/WorkoutPlanBuilder";
 import { colors } from "../../src/theme";
 
 export default function TrainerScreen() {
@@ -53,18 +55,12 @@ export default function TrainerScreen() {
         </View>
       </Section>
 
-      {/*
-        TODO: port the prototype's MealPlanBuilder and WorkoutPlanBuilder UI.
-        The underlying logic already lives in packages/shared:
-          - buildDayMeals / buildShoppingList (calc/shoppingList.ts)
-          - buildWorkoutSchedule (calc/workoutSchedule.ts)
-        This screen just needs form controls (diet style chips, shopping-list
-        day count, location/equipment/cardio pickers) wired to those + a
-        "sync week to calendar" action calling the calendar API's
-        replaceTemplateEventsOfType("workout", ...).
-      */}
-      <Section title="Meal & workout plans">
-        <Text style={{ color: colors.muted }}>Plan builder coming soon — targets and physique above already drive it.</Text>
+      <Section title="Meal plan">
+        <MealPlanBuilder profile={profile} targets={targets} onProfileSaved={refetch} />
+      </Section>
+
+      <Section title="Workout plan">
+        <WorkoutPlanBuilder profile={profile} />
       </Section>
 
       {/* TODO: TechniqueCheckSection — video upload, frame extraction
