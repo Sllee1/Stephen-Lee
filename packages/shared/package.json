@@ -1,0 +1,17 @@
+{
+  "name": "@nutrition-app/shared",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Data model, constants, and pure calculation logic shared between the backend and the mobile app.",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}

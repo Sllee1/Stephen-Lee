@@ -1,0 +1,23 @@
+{
+  "name": "nutrition-app",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Production monorepo for the nutrition/fitness tracker (React Native + backend + shared logic).",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:backend": "npm run dev --workspace apps/backend",
+    "dev:mobile": "npm run start --workspace apps/mobile",
+    "build:shared": "npm run build --workspace packages/shared",
+    "db:migrate": "npm run db:migrate --workspace apps/backend",
+    "db:studio": "npm run db:studio --workspace apps/backend",
+    "lint": "npm run lint --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

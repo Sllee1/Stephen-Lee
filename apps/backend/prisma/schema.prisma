@@ -1,0 +1,190 @@
+// Prisma schema for the nutrition/fitness app backend.
+// Mirrors the data model in packages/shared/src/types.ts — one row per user
+// per entity, where the prototype had one browser's localStorage.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+
+  profile        Profile?
+  meals          Meal[]
+  templateEvents TemplateEvent[]
+  dateEvents     DateEvent[]
+  weightEntries  WeightEntry[]
+  workoutResults WorkoutResult[]
+  bodyAnalysis   BodyAnalysis?
+  entitlement    Entitlement?
+  pushTokens     PushToken[]
+}
+
+model Profile {
+  userId           String   @id
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sex              String // "male" | "female"
+  age              Int
+  heightCm         Float
+  weightKg         Float
+  activity         String // ActivityLevel id
+  goal             String // "lose" | "maintain" | "gain"
+  unitPref         String // "imperial" | "metric"
+  goalWeightKg     Float?
+  physique         String?
+  targetBodyFatPct Float?
+  motivationMode   String   @default("none")
+  dietStyle        String   @default("balanced")
+  bmiPreference    String   @default("standard")
+  updatedAt        DateTime @updatedAt
+}
+
+model Meal {
+  id      String   @id @default(cuid())
+  userId  String
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date    String // "YYYY-MM-DD" — indexed for the daily-log query
+  name    String
+  thumbUrl String?
+  time    DateTime
+  // Nutrient totals for the whole meal (sum of items), flattened for fast
+  // daily-total queries without joining items.
+  calories       Float
+  protein_g      Float
+  carbs_g        Float
+  fat_g          Float
+  satFat_g       Float
+  fiber_g        Float
+  sugar_g        Float
+  sodium_mg      Float
+  cholesterol_mg Float
+  vitD_mcg       Float
+  calcium_mg     Float
+  iron_mg        Float
+  potassium_mg   Float
+  vitA_mcg       Float
+  vitC_mg        Float
+
+  items MealItem[]
+
+  @@index([userId, date])
+}
+
+model MealItem {
+  id       String @id @default(cuid())
+  mealId   String
+  meal     Meal   @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  name     String
+  quantity String?
+
+  calories       Float
+  protein_g      Float
+  carbs_g        Float
+  fat_g          Float
+  satFat_g       Float
+  fiber_g        Float
+  sugar_g        Float
+  sodium_mg      Float
+  cholesterol_mg Float
+  vitD_mcg       Float
+  calcium_mg     Float
+  iron_mg        Float
+  potassium_mg   Float
+  vitA_mcg       Float
+  vitC_mg        Float
+}
+
+/// Recurring, day-of-week template entry ("Week Template" view).
+model TemplateEvent {
+  id          String  @id @default(cuid())
+  userId      String
+  user        User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  day         Int // 0=Sun..6=Sat
+  type        String // "workout" | "eating"
+  label       String
+  startTime   String? // "HH:MM"
+  endTime     String?
+  notifyStart Boolean @default(false)
+  notifyEnd   Boolean @default(false)
+
+  @@index([userId, day])
+}
+
+/// Concrete-date calendar entry ("Month Calendar" view). May originate from
+/// an auto-fill pass against a TemplateEvent (sourceTemplateEventId set) or
+/// be a one-off manual edit for that specific date.
+model DateEvent {
+  id                    String  @id @default(cuid())
+  userId                String
+  user                  User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date                  String // "YYYY-MM-DD"
+  type                  String // "workout" | "eating"
+  label                 String
+  startTime             String?
+  endTime               String?
+  notifyStart           Boolean @default(false)
+  notifyEnd             Boolean @default(false)
+  sourceTemplateEventId String?
+
+  @@index([userId, date])
+}
+
+model WeightEntry {
+  id       String @id @default(cuid())
+  userId   String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date     String // "YYYY-MM-DD"
+  weightKg Float
+
+  @@unique([userId, date])
+}
+
+model WorkoutResult {
+  id         String @id @default(cuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  label      String
+  normalized String
+  date       String // "YYYY-MM-DD"
+  value      String
+
+  @@unique([userId, normalized, date])
+}
+
+model BodyAnalysis {
+  userId     String   @id
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  thumbUrl   String
+  build      String
+  bmiOffset  Float
+  confidence String
+  note       String
+  createdAt  DateTime @default(now())
+}
+
+model Entitlement {
+  userId    String    @id
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  tier      String    @default("free") // "free" | "premium"
+  provider  String? // "revenuecat" | "stripe"
+  productId String?
+  expiresAt DateTime?
+  updatedAt DateTime  @updatedAt
+}
+
+model PushToken {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique // Expo push token
+  platform  String // "ios" | "android"
+  createdAt DateTime @default(now())
+}
