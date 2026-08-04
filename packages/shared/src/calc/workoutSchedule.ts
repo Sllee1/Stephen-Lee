@@ -1,5 +1,5 @@
-import { STRENGTH_DAYS_BY_GOAL, STRENGTH_SLOTS } from "../constants/eatingPresets.js";
-import type { Goal } from "../types.js";
+import { STRENGTH_DAYS_BY_GOAL, STRENGTH_SLOTS } from "../constants/eatingPresets";
+import type { Goal } from "../types";
 
 export type WorkoutLocation = "home" | "gym" | "outside";
 export type WorkoutEquipment = "bodyweight" | "weights" | "mixed";

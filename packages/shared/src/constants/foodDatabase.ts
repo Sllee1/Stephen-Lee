@@ -1,4 +1,4 @@
-import type { NutrientTotals } from "../types.js";
+import type { NutrientTotals } from "../types";
 
 export interface FoodDatabaseEntry extends NutrientTotals {
   name: string;

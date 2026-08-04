@@ -1,5 +1,5 @@
-import type { DateEvent, FillRange, TemplateEvent } from "../types.js";
-import { todayKey } from "./time.js";
+import type { DateEvent, FillRange, TemplateEvent } from "../types";
+import { todayKey } from "./time";
 
 export interface MonthCell {
   date: string | null; // "YYYY-MM-DD", null for leading/trailing blanks

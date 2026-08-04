@@ -1,5 +1,5 @@
-import type { WorkoutResult } from "../types.js";
-import { todayKey } from "./time.js";
+import type { WorkoutResult } from "../types";
+import { todayKey } from "./time";
 
 export function normalizeLabel(label: string | null | undefined): string {
   return (label || "").trim().toLowerCase();
