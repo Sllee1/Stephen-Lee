@@ -20,6 +20,10 @@ const MODEL = "claude-sonnet-4-6";
  * cost real money per request.
  */
 async function callClaude(content: unknown[], maxTokens: number): Promise<string> {
+  if (!env.ANTHROPIC_API_KEY) {
+    throw new Error("ANTHROPIC_API_KEY isn't configured on the server — photo analysis, food lookup, and technique check are unavailable until it's set.");
+  }
+
   const response = await fetch(ANTHROPIC_URL, {
     method: "POST",
     headers: {

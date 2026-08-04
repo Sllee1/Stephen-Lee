@@ -1,4 +1,4 @@
-import { categorizeIngredient, MEAL_LIBRARY, type MealStyle } from "../constants/mealLibrary";
+import { categorizeIngredient, MEAL_LIBRARY, type MealStyle } from "../constants/mealLibrary.js";
 
 export interface ShoppingListItem {
   name: string;

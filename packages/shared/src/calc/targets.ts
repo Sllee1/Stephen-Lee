@@ -1,6 +1,6 @@
-import { ACTIVITY_LEVELS } from "../constants/activity";
-import { PHYSIQUES } from "../constants/physiques";
-import type { Goal, Sex } from "../types";
+import { ACTIVITY_LEVELS } from "../constants/activity.js";
+import { PHYSIQUES } from "../constants/physiques.js";
+import type { Goal, Sex } from "../types.js";
 
 export interface BmrInput {
   sex: Sex;
