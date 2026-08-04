@@ -1,18 +1,37 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, View } from "react-native";
 import { buildMonthCells, todayKey, WEEK_DAYS, type DateEvent } from "@nutrition-app/shared";
-import { autoFillCalendar, deleteDateEvent, getDateEvents } from "../../src/api/calendar";
+import { autoFillCalendar, clearCalendar, createDateEvent, deleteDateEvent, getDateEvents } from "../../src/api/calendar";
+import { AddCalendarEventForm, type EventDraft } from "../../src/components/AddCalendarEventForm";
+import { WeekTemplateEditor } from "../../src/components/WeekTemplateEditor";
 import { AdBanner } from "../../src/components/AdBanner";
 import { colors } from "../../src/theme";
 
-/**
- * Month Calendar view (real dates). The Week Template editor (recurring
- * day-of-week entries + "apply to all 7 days" quick-add — see
- * src/api/calendar.ts replaceTemplateEventsOfType) is the other half of the
- * prototype's PlanTab; add it as a second screen/segment once the add-event
- * form is built, wired to createTemplateEvent / getTemplateEvents.
- */
+type PlanView = "month" | "template";
+
 export default function PlanScreen() {
+  const [view, setView] = useState<PlanView>("month");
+  const [resetKey, setResetKey] = useState(0);
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 16 }}>
+      <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Plan</Text>
+
+      <View style={{ flexDirection: "row", gap: 6 }}>
+        <ViewChip label="Month calendar" active={view === "month"} onPress={() => setView("month")} />
+        <ViewChip label="Week template" active={view === "template"} onPress={() => setView("template")} />
+      </View>
+
+      {view === "month" ? <MonthCalendarView /> : <WeekTemplateEditor key={resetKey} />}
+
+      <ClearCalendarButton onCleared={() => setResetKey((k) => k + 1)} />
+
+      <AdBanner />
+    </ScrollView>
+  );
+}
+
+function MonthCalendarView() {
   const today = new Date();
   const [year, setYear] = useState(today.getFullYear());
   const [month0, setMonth0] = useState(today.getMonth());
@@ -20,6 +39,7 @@ export default function PlanScreen() {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [filling, setFilling] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const cells = buildMonthCells(year, month0);
 
@@ -50,7 +70,7 @@ export default function PlanScreen() {
       Alert.alert("Calendar filled", `Updated ${result.touchedDates} day(s) from your week template.`);
       await load();
     } catch {
-      Alert.alert("Couldn't fill calendar", "Set up a week template on the Trainer tab first.");
+      Alert.alert("Couldn't fill calendar", "Set up a week template first.");
     } finally {
       setFilling(false);
     }
@@ -61,12 +81,20 @@ export default function PlanScreen() {
     setYear(next.getFullYear());
     setMonth0(next.getMonth());
     setSelectedDate(null);
+    setShowForm(false);
+  }
+
+  async function addEvent(draft: EventDraft) {
+    if (!selectedDate) return;
+    await createDateEvent({ date: selectedDate, ...draft });
+    setShowForm(false);
+    await load();
   }
 
   const selectedEvents = selectedDate ? eventsByDate[selectedDate] ?? [] : [];
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 16 }}>
+    <View style={{ gap: 16 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
         <Pressable onPress={() => changeMonth(-1)}><Text style={{ fontSize: 18, color: colors.ink }}>‹</Text></Pressable>
         <Text style={{ fontSize: 20, fontWeight: "800", color: colors.ink }}>
@@ -95,7 +123,10 @@ export default function PlanScreen() {
               <Pressable
                 key={i}
                 disabled={!cell.date}
-                onPress={() => setSelectedDate(cell.date)}
+                onPress={() => {
+                  setSelectedDate(cell.date);
+                  setShowForm(false);
+                }}
                 style={{
                   width: `${100 / 7}%`,
                   aspectRatio: 1,
@@ -144,12 +175,66 @@ export default function PlanScreen() {
               </View>
             ))
           )}
-          {/* TODO: AddEventForm — type toggle, start/end or fasting-window
-              checkbox, notify toggles; POST via src/api/calendar.ts createDateEvent. */}
+
+          {showForm ? (
+            <AddCalendarEventForm onSubmit={addEvent} onCancel={() => setShowForm(false)} />
+          ) : (
+            <Pressable onPress={() => setShowForm(true)} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}>
+              <Text style={{ color: colors.ink, fontWeight: "600" }}>+ Add event to this date</Text>
+            </Pressable>
+          )}
         </View>
       ) : null}
+    </View>
+  );
+}
 
-      <AdBanner />
-    </ScrollView>
+/** Tap-twice-within-a-few-seconds confirm, matching the prototype's ClearCalendarButton. */
+function ClearCalendarButton({ onCleared }: { onCleared: () => void }) {
+  const [confirming, setConfirming] = useState(false);
+  const [clearing, setClearing] = useState(false);
+
+  function handlePress() {
+    if (!confirming) {
+      setConfirming(true);
+      setTimeout(() => setConfirming(false), 4000);
+      return;
+    }
+    setClearing(true);
+    clearCalendar()
+      .then(() => {
+        onCleared();
+        setConfirming(false);
+      })
+      .finally(() => setClearing(false));
+  }
+
+  return (
+    <Pressable onPress={handlePress} disabled={clearing} style={{ borderWidth: 1, borderColor: colors.rust, borderRadius: 10, padding: 12, alignItems: "center" }}>
+      {clearing ? (
+        <ActivityIndicator color={colors.rust} />
+      ) : (
+        <Text style={{ color: colors.rust, fontWeight: "700" }}>{confirming ? "Tap again to confirm — clears everything" : "Clear entire calendar"}</Text>
+      )}
+    </Pressable>
+  );
+}
+
+function ViewChip({ label, active, onPress }: { label: string; active: boolean; onPress: () => void }) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        flex: 1,
+        paddingVertical: 10,
+        borderRadius: 10,
+        alignItems: "center",
+        borderWidth: 1,
+        borderColor: colors.line,
+        backgroundColor: active ? colors.ink : colors.card,
+      }}
+    >
+      <Text style={{ color: active ? colors.paper : colors.ink, fontWeight: "700" }}>{label}</Text>
+    </Pressable>
   );
 }

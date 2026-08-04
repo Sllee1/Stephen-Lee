@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { todayKey, type MealItem } from "@nutrition-app/shared";
 import { analyzeFoodPhoto } from "../../src/api/ai";
 import { createMeal } from "../../src/api/meals";
+import { FoodPicker } from "../../src/components/FoodPicker";
 import { colors } from "../../src/theme";
 
 /**
@@ -23,6 +24,7 @@ export default function LogScreen() {
   const [analyzing, setAnalyzing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confidence, setConfidence] = useState<"low" | "medium" | "high" | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   async function pickAndAnalyze(fromCamera: boolean) {
     const permission = fromCamera
@@ -134,9 +136,19 @@ export default function LogScreen() {
         </View>
       ) : null}
 
-      {/* TODO: quick-add from FOOD_DATABASE and free-text AI lookup (see
-          packages/shared FOOD_DATABASE + src/api/ai.ts lookupFoodByName),
-          matching the prototype's FoodPicker component. */}
+      <Pressable onPress={() => setShowPicker(true)} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 14, alignItems: "center" }}>
+        <Text style={{ color: colors.ink, fontWeight: "700" }}>+ Add a food without a photo</Text>
+      </Pressable>
+
+      <Modal visible={showPicker} animationType="slide" onRequestClose={() => setShowPicker(false)}>
+        <FoodPicker
+          onAdd={(item) => {
+            setItems((prev) => [...prev, item]);
+            setShowPicker(false);
+          }}
+          onClose={() => setShowPicker(false)}
+        />
+      </Modal>
     </ScrollView>
   );
 }

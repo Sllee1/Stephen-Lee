@@ -58,31 +58,38 @@ npm run dev:mobile                                 # Expo dev server — scan th
 ## What's fully wired vs. scaffolded
 
 **Fully wired end-to-end** (mobile screen → API route → Postgres, or → the
-Anthropic proxy): auth + onboarding, the Today tab (daily totals, coach
-message, today's workout + previous-result lookup), photo-based meal
-logging (camera/library → `/ai/analyze-food-photo` → review → save), the
-Month Calendar view + "fill from template" auto-fill, BMI + photo-adjusted
-estimate, motivation-mode picker, push-notification registration, and the
-ads/entitlement gate.
+Anthropic proxy):
+- Auth + onboarding
+- Today tab: daily totals, coach message, today's workout + previous-result lookup
+- Photo-based meal logging (camera/library → `/ai/analyze-food-photo` → review → save)
+- Quick-add food picker (`FOOD_DATABASE`), free-text AI food lookup (`/ai/lookup-food`), and manual entry — all three ways to add a food without a photo, in the Log tab
+- Meal plan builder (Trainer tab): diet-style chips, physique-based suggestion banner, today's scaled meal preview, 3/5/7-day shopping list with copy-to-clipboard
+- Workout plan builder (Trainer tab): location/equipment/cardio pickers, physique auto-fill, 7-day schedule preview, "Add week to planner" (replaces the workout half of the calendar template)
+- Technique-check video: record/pick a clip, extract frames natively (`expo-video-thumbnails` — see below), send to `/ai/analyze-technique-video`, render strengths/improvements/safety notes
+- Month Calendar view + "fill from template" auto-fill, plus per-date add/delete events
+- Week Template editor: day-of-week event list with add/delete, and eating/workout "apply to all 7 days" quick-add presets
+- Clear-entire-calendar (tap-twice-to-confirm)
+- BMI + photo-adjusted estimate, motivation-mode picker, push-notification registration, and the ads/entitlement gate
 
-**Scaffolded with the underlying logic in place, UI not yet built** (each
-has a `TODO` comment at its call site pointing at the ready-to-use
-`packages/shared` function):
-- Meal plan builder / workout plan builder / shopping list UI (Trainer tab) — `calc/shoppingList.ts`, `calc/workoutSchedule.ts`
-- Week Template editor (recurring day-of-week entries, "apply to all 7
-  days" quick-add) — `apps/backend/src/routes/calendar.ts` already exposes
-  `PUT /calendar/template/replace-type`
-- Add/edit calendar event form (Month Calendar tab)
-- Quick-add food picker (`FOOD_DATABASE`) and free-text AI food lookup
-  (`/ai/lookup-food`) inside the Log tab
-- Technique-check video feature — needs a frame-extraction step on native
-  (the prototype used `<video>`/`<canvas>`, which don't exist in RN; look at
-  `expo-camera` for capture and a native frame-extraction lib, or ship the
-  first version has record-only-then-upload-whole-clip and do frame
-  extraction server-side)
+**Still scaffolded / not built:**
 - 5 of 6 meal-plan styles in `packages/shared/src/constants/mealLibrary.ts`
   (only `balanced` is populated) and the full ~230-row `FOOD_DATABASE` (a
-  small seed is there — `lookupFoodByName` already covers anything missing)
+  small seed is there — `lookupFoodByName` already covers anything missing
+  in the meantime). This is data entry, not architecture.
+- The workout-plan builder's sport list (`WorkoutPlanBuilder.tsx`) is an
+  inferred stand-in — the prototype's exact 8-sport list wasn't captured
+  during extraction, so swap in the real one if you have it.
+
+### How the technique-check video feature actually works here
+
+The prototype extracted frames with an offscreen `<video>`/`<canvas>` pair,
+which doesn't exist in React Native. `apps/mobile/src/services/videoFrames.ts`
+gets the same result (a handful of evenly-spaced JPEG frames read as a
+chronological sequence) using `expo-video-thumbnails` — a thin wrapper over
+`AVAssetImageGenerator` (iOS) / `MediaMetadataRetriever` (Android) — to grab
+a still at each timestamp, then reads each still as base64 via
+`expo-file-system`. Same contract into the backend (`/ai/analyze-technique-video`),
+different extraction mechanism.
 
 ## Before shipping
 

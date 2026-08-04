@@ -6,6 +6,7 @@ import { saveProfile } from "../../src/api/profile";
 import { AdBanner } from "../../src/components/AdBanner";
 import { MealPlanBuilder } from "../../src/components/MealPlanBuilder";
 import { WorkoutPlanBuilder } from "../../src/components/WorkoutPlanBuilder";
+import { TechniqueCheckSection } from "../../src/components/TechniqueCheckSection";
 import { colors } from "../../src/theme";
 
 export default function TrainerScreen() {
@@ -63,10 +64,9 @@ export default function TrainerScreen() {
         <WorkoutPlanBuilder profile={profile} />
       </Section>
 
-      {/* TODO: TechniqueCheckSection — video upload, frame extraction
-          (expo-camera can record; extracting frames needs a small native or
-          FFmpeg-kit step since RN has no <canvas>/<video> DOM primitives),
-          then src/api/ai.ts analyzeTechniqueVideo. */}
+      <Section title="Technique check">
+        <TechniqueCheckSection />
+      </Section>
 
       <AdBanner />
     </ScrollView>
