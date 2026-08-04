@@ -62,23 +62,22 @@ Anthropic proxy):
 - Auth + onboarding
 - Today tab: daily totals, coach message, today's workout + previous-result lookup
 - Photo-based meal logging (camera/library → `/ai/analyze-food-photo` → review → save)
-- Quick-add food picker (`FOOD_DATABASE`), free-text AI food lookup (`/ai/lookup-food`), and manual entry — all three ways to add a food without a photo, in the Log tab
-- Meal plan builder (Trainer tab): diet-style chips, physique-based suggestion banner, today's scaled meal preview, 3/5/7-day shopping list with copy-to-clipboard
-- Workout plan builder (Trainer tab): location/equipment/cardio pickers, physique auto-fill, 7-day schedule preview, "Add week to planner" (replaces the workout half of the calendar template)
+- Quick-add food picker (`FOOD_DATABASE`, ported verbatim from the prototype — all ~170 entries), free-text AI food lookup (`/ai/lookup-food`), and manual entry — all three ways to add a food without a photo, in the Log tab
+- Meal plan builder (Trainer tab): diet-style chips, physique-based suggestion banner, today's scaled meal preview, 3/5/7-day shopping list with copy-to-clipboard — all 6 diet styles' recipes ported verbatim (`MEAL_LIBRARY`), not just `balanced`
+- Workout plan builder (Trainer tab): location/equipment/cardio pickers (labels ported verbatim), the real 8-sport list, physique auto-fill, 7-day schedule preview with exact prototype wording, "Add week to planner" (replaces the workout half of the calendar template)
 - Technique-check video: record/pick a clip, extract frames natively (`expo-video-thumbnails` — see below), send to `/ai/analyze-technique-video`, render strengths/improvements/safety notes
 - Month Calendar view + "fill from template" auto-fill, plus per-date add/delete events
 - Week Template editor: day-of-week event list with add/delete, and eating/workout "apply to all 7 days" quick-add presets
 - Clear-entire-calendar (tap-twice-to-confirm)
 - BMI + photo-adjusted estimate, motivation-mode picker, push-notification registration, and the ads/entitlement gate
 
-**Still scaffolded / not built:**
-- 5 of 6 meal-plan styles in `packages/shared/src/constants/mealLibrary.ts`
-  (only `balanced` is populated) and the full ~230-row `FOOD_DATABASE` (a
-  small seed is there — `lookupFoodByName` already covers anything missing
-  in the meantime). This is data entry, not architecture.
-- The workout-plan builder's sport list (`WorkoutPlanBuilder.tsx`) is an
-  inferred stand-in — the prototype's exact 8-sport list wasn't captured
-  during extraction, so swap in the real one if you have it.
+**Still scaffolded / not built:** nothing at the data level anymore — `FOOD_DATABASE`,
+all 6 `MEAL_LIBRARY` styles, `CATEGORY_RULES`, and the workout builder's
+location/equipment/cardio/sport option lists are all ported verbatim from
+the original source file (re-read directly for this pass, not re-derived).
+What's left is genuinely product work, not porting: a real nutrition-DB
+backing for anything outside the ~170-item shortlist (already covered by
+AI lookup in the meantime), and richer recipe content over time.
 
 ### How the technique-check video feature actually works here
 

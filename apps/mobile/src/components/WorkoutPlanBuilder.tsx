@@ -21,22 +21,19 @@ const LOCATIONS: { id: WorkoutLocation; label: string }[] = [
 ];
 
 const EQUIPMENT: { id: WorkoutEquipment; label: string }[] = [
-  { id: "bodyweight", label: "Bodyweight" },
+  { id: "bodyweight", label: "Bodyweight only" },
   { id: "weights", label: "Weights" },
   { id: "mixed", label: "Mixed" },
 ];
 
 const CARDIO_LEVELS: { id: CardioLevel; label: string }[] = [
-  { id: "low", label: "Low" },
-  { id: "moderate", label: "Moderate" },
-  { id: "high", label: "High" },
+  { id: "low", label: "Less cardio" },
+  { id: "moderate", label: "Balanced" },
+  { id: "high", label: "More cardio" },
 ];
 
-// The prototype offered "none" + 8 sport-specific cardio labels; the exact
-// list wasn't captured verbatim during extraction, so this is a reasonable
-// stand-in set covering the sports PHYSIQUES already references (swimming,
-// running) plus common others — swap in the real list if you have it.
-const SPORTS = ["none", "running", "swimming", "cycling", "basketball", "soccer", "tennis", "boxing", "climbing"];
+// Ported verbatim from the prototype's SPORTS array (id order + labels).
+const SPORTS = ["none", "running", "cycling", "swimming", "basketball", "soccer", "tennis", "yoga", "climbing"];
 
 const KIND_COLOR: Record<"strength" | "cardio" | "rest", string> = {
   strength: colors.green,
