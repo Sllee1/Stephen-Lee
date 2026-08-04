@@ -15,6 +15,7 @@ import bodyAnalysisRoutes from "./routes/bodyAnalysis.js";
 import aiRoutes from "./routes/ai.js";
 import subscriptionRoutes from "./routes/subscriptions.js";
 import pushRoutes from "./routes/push.js";
+import foodRoutes from "./routes/foods.js";
 
 async function buildServer() {
   const app = Fastify({
@@ -41,6 +42,7 @@ async function buildServer() {
   await app.register(aiRoutes);
   await app.register(subscriptionRoutes);
   await app.register(pushRoutes);
+  await app.register(foodRoutes);
 
   return app;
 }

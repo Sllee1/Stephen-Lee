@@ -188,3 +188,38 @@ model PushToken {
   platform  String // "ios" | "android"
   createdAt DateTime @default(now())
 }
+
+/// Cached per-food nutrient lookup from USDA FoodData Central, keyed by
+/// their fdcId. Nutrition data barely changes, so this is cached
+/// indefinitely rather than on a TTL — add one if USDA revises a food's
+/// data and it needs to be reflected without a manual cache clear.
+model UsdaFoodCache {
+  fdcId     Int      @id
+  name      String
+  serving   String
+  calories       Float
+  protein_g      Float
+  carbs_g        Float
+  fat_g          Float
+  satFat_g       Float
+  fiber_g        Float
+  sugar_g        Float
+  sodium_mg      Float
+  cholesterol_mg Float
+  vitD_mcg       Float
+  calcium_mg     Float
+  iron_mg        Float
+  potassium_mg   Float
+  vitA_mcg       Float
+  vitC_mg        Float
+  fetchedAt DateTime @default(now())
+}
+
+/// Caches which fdcIds a given search query returned, so a repeat search
+/// hits Postgres instead of USDA's rate-limited API (free keys are capped
+/// at 1,000 requests/hour).
+model UsdaSearchCache {
+  query     String   @id
+  fdcIds    Int[]
+  fetchedAt DateTime @default(now())
+}

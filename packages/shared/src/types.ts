@@ -64,6 +64,13 @@ export interface MealItem extends NutrientTotals {
   quantity?: string;
 }
 
+/** A food from USDA FoodData Central (via GET /foods/search), shaped like a FoodDatabaseEntry so the picker can treat both uniformly. */
+export interface UsdaFoodResult extends NutrientTotals {
+  fdcId: number;
+  name: string;
+  serving: string;
+}
+
 export interface Meal extends NutrientTotals {
   id: string;
   userId: string;

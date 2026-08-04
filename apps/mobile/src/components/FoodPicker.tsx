@@ -1,17 +1,20 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { FOOD_DATABASE, NUTRIENT_KEYS, type FoodDatabaseEntry, type MealItem, type NutrientTotals } from "@nutrition-app/shared";
+import { FOOD_DATABASE, NUTRIENT_KEYS, type FoodDatabaseEntry, type MealItem, type NutrientTotals, type UsdaFoodResult } from "@nutrition-app/shared";
 import { lookupFoodByName } from "../api/ai";
+import { searchUsdaFoods } from "../api/foods";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
 import { colors } from "../theme";
 
 type Mode = "quick" | "ai" | "manual";
+type PickableFood = FoodDatabaseEntry | UsdaFoodResult;
 
 interface Props {
   onAdd: (item: MealItem) => void;
   onClose: () => void;
 }
 
-function scaledTotals(food: FoodDatabaseEntry, servings: number): NutrientTotals {
+function scaledTotals(food: PickableFood, servings: number): NutrientTotals {
   const totals = {} as NutrientTotals;
   for (const key of NUTRIENT_KEYS) totals[key] = Math.round(food[key] * servings * 10) / 10;
   return totals;
@@ -55,14 +58,46 @@ export function FoodPicker({ onAdd, onClose }: Props) {
 
 function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<FoodDatabaseEntry | null>(null);
+  const [selected, setSelected] = useState<PickableFood | null>(null);
   const [servings, setServings] = useState(1);
+  const [usdaResults, setUsdaResults] = useState<UsdaFoodResult[]>([]);
+  const [usdaLoading, setUsdaLoading] = useState(false);
+  const [usdaError, setUsdaError] = useState(false);
 
-  const results = useMemo(() => {
+  const debouncedQuery = useDebouncedValue(query.trim(), 400);
+
+  const localResults = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
     return FOOD_DATABASE.filter((f) => f.name.toLowerCase().includes(q)).slice(0, 6);
   }, [query]);
+
+  // Local FOOD_DATABASE is instant (~170 common items); USDA FoodData
+  // Central covers everything else, at the cost of a network round trip —
+  // debounced so typing doesn't fire a request per keystroke.
+  useEffect(() => {
+    if (debouncedQuery.length < 3) {
+      setUsdaResults([]);
+      setUsdaError(false);
+      return;
+    }
+    let cancelled = false;
+    setUsdaLoading(true);
+    setUsdaError(false);
+    searchUsdaFoods(debouncedQuery)
+      .then((results) => {
+        if (!cancelled) setUsdaResults(results);
+      })
+      .catch(() => {
+        if (!cancelled) setUsdaError(true);
+      })
+      .finally(() => {
+        if (!cancelled) setUsdaLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
 
   const preview = selected ? scaledTotals(selected, servings) : null;
 
@@ -91,9 +126,9 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
         style={inputStyle}
       />
 
-      {results.length > 0 && !selected ? (
+      {localResults.length > 0 && !selected ? (
         <View style={{ gap: 6 }}>
-          {results.map((food) => (
+          {localResults.map((food) => (
             <Pressable
               key={food.name}
               onPress={() => setSelected(food)}
@@ -106,8 +141,35 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
         </View>
       ) : null}
 
-      {query.trim() && results.length === 0 && !selected ? (
-        <Text style={{ color: colors.muted }}>No matches in the quick list — try AI lookup instead.</Text>
+      {!selected && debouncedQuery.length >= 3 ? (
+        <View style={{ gap: 6 }}>
+          <Text style={{ color: colors.muted, fontSize: 12, textTransform: "uppercase" }}>From USDA FoodData Central</Text>
+          {usdaLoading ? (
+            <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
+              <ActivityIndicator color={colors.rust} size="small" />
+              <Text style={{ color: colors.muted }}>Searching…</Text>
+            </View>
+          ) : usdaError ? (
+            <Text style={{ color: colors.muted }}>Couldn't reach the USDA database — try AI lookup instead.</Text>
+          ) : usdaResults.length === 0 ? (
+            <Text style={{ color: colors.muted }}>No matches — try AI lookup instead.</Text>
+          ) : (
+            usdaResults.map((food) => (
+              <Pressable
+                key={food.fdcId}
+                onPress={() => setSelected(food)}
+                style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12 }}
+              >
+                <Text style={{ fontWeight: "600", color: colors.ink }}>{food.name}</Text>
+                <Text style={{ color: colors.muted }}>per {food.serving} · {Math.round(food.calories)} cal</Text>
+              </Pressable>
+            ))
+          )}
+        </View>
+      ) : null}
+
+      {query.trim() && query.trim().length < 3 && localResults.length === 0 && !selected ? (
+        <Text style={{ color: colors.muted }}>Keep typing — USDA search kicks in at 3 characters.</Text>
       ) : null}
 
       {selected && preview ? (
