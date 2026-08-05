@@ -67,12 +67,13 @@ const DAILY_VALUES: Partial<Record<NutrientKey, number>> = {
 
 /**
  * Nutrients worth color-coding toward "get enough of" (red at 0%, amber
- * partway, green at 100%+). Deliberately excludes carbs/fat/saturated fat/
+ * partway, green at 100%+). Deliberately excludes carbs/saturated fat/
  * sugar/sodium/cholesterol — those are limit-conscious, not "more is
  * better up to 100%" nutrients, so a green 100% there would send the wrong
- * signal.
+ * signal. Total fat is included since (unlike saturated fat) it's a target
+ * to hit, not just a ceiling.
  */
-const GET_ENOUGH_KEYS = new Set<NutrientKey>(["protein_g", "fiber_g", "vitD_mcg", "calcium_mg", "iron_mg", "potassium_mg", "vitA_mcg", "vitC_mg"]);
+const GET_ENOUGH_KEYS = new Set<NutrientKey>(["protein_g", "fat_g", "fiber_g", "vitD_mcg", "calcium_mg", "iron_mg", "potassium_mg", "vitA_mcg", "vitC_mg"]);
 
 function dvColor(pct: number): string {
   if (pct <= 0) return colors.rust;
@@ -110,7 +111,7 @@ export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
         );
       })}
       <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>
-        % Daily Value based on a 2,000 calorie diet. Protein, fiber, and vitamins/minerals are colored — red at 0%, amber until you hit 100%, green at 100%+.
+        % Daily Value based on a 2,000 calorie diet. Protein, total fat, fiber, and vitamins/minerals are colored — red at 0%, amber until you hit 100%, green at 100%+.
       </Text>
     </View>
   );
