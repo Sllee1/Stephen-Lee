@@ -22,7 +22,7 @@ export default function PlanScreen() {
         <ViewChip label="Week template" active={view === "template"} onPress={() => setView("template")} />
       </View>
 
-      {view === "month" ? <MonthCalendarView /> : <WeekTemplateEditor key={resetKey} />}
+      {view === "month" ? <MonthCalendarView key={resetKey} /> : <WeekTemplateEditor key={resetKey} />}
 
       <ClearCalendarButton onCleared={() => setResetKey((k) => k + 1)} />
 
