@@ -6,15 +6,19 @@ import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { analyzeBuildPhoto } from "../../src/api/ai";
 import { useAuth } from "../../src/context/AuthContext";
+import { useEntitlement } from "../../src/context/EntitlementContext";
 import { registerForPushNotifications } from "../../src/services/notifications";
+import { PAYWALL_RESULT, presentCustomerCenter, presentPaywall } from "../../src/services/subscriptions";
 import { colors, colorForBmiCategory } from "../../src/theme";
 
 export default function ProfileScreen() {
   const { profile, loading, refetch } = useProfile();
   const { logout } = useAuth();
+  const entitlement = useEntitlement();
   const [buildThumb, setBuildThumb] = useState<string | null>(null);
   const [buildResult, setBuildResult] = useState<{ build: string; bmiOffset: number; note: string } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
 
   if (loading || !profile) {
     return (
@@ -53,6 +57,33 @@ export default function ProfileScreen() {
 
   function setBmiPreference(pref: BmiPreference) {
     saveProfile({ bmiPreference: pref }).then(refetch);
+  }
+
+  async function upgradeToPremium() {
+    setPurchasing(true);
+    try {
+      const result = await presentPaywall();
+      if (result === PAYWALL_RESULT.PURCHASED || result === PAYWALL_RESULT.RESTORED) {
+        // The RevenueCat webhook (apps/backend/src/routes/subscriptions.ts)
+        // is what actually flips the DB row this reads from — it's usually
+        // near-instant, but immediately after a purchase there's a small
+        // window where it hasn't landed yet.
+        await entitlement.refresh();
+      }
+    } catch {
+      Alert.alert("Something went wrong", "Couldn't open the upgrade screen — try again.");
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  async function manageSubscription() {
+    try {
+      await presentCustomerCenter();
+      await entitlement.refresh();
+    } catch {
+      Alert.alert("Something went wrong", "Couldn't open subscription management — try again.");
+    }
   }
 
   return (
@@ -106,6 +137,27 @@ export default function ProfileScreen() {
         <Pressable onPress={() => registerForPushNotifications()} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}>
           <Text style={{ color: colors.ink, fontWeight: "600" }}>Enable workout & eating-window reminders</Text>
         </Pressable>
+      </Section>
+
+      <Section title="Premium">
+        {entitlement.tier === "premium" ? (
+          <>
+            <Text style={{ color: colors.ink, fontWeight: "600" }}>Premium active — ads off</Text>
+            {entitlement.expiresAt ? (
+              <Text style={{ color: colors.muted }}>Renews/expires {new Date(entitlement.expiresAt).toLocaleDateString()}</Text>
+            ) : null}
+            <Pressable onPress={manageSubscription} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 4 }}>
+              <Text style={{ color: colors.ink, fontWeight: "600" }}>Manage subscription</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={{ color: colors.muted }}>Remove ads and unlock premium-only features.</Text>
+            <Pressable onPress={upgradeToPremium} disabled={purchasing} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 4 }}>
+              {purchasing ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Upgrade to Premium</Text>}
+            </Pressable>
+          </>
+        )}
       </Section>
 
       <Pressable onPress={logout} style={{ borderRadius: 10, padding: 14, alignItems: "center", borderWidth: 1, borderColor: colors.rust }}>

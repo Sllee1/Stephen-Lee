@@ -114,8 +114,9 @@ different extraction mechanism.
 ## Before shipping
 
 - Replace the placeholder assets in `apps/mobile/assets/` (real icon/splash)
-- Configure RevenueCat products/entitlement identifiers and AdMob ad units,
-  then set the corresponding `EXPO_PUBLIC_*` env vars
+- Fill in the real RevenueCat SDK keys, entitlement identifier, and AdMob
+  App/ad-unit IDs (see "RevenueCat + AdMob" below) — they're currently
+  either unset or pointed at Google's test AdMob App ID
 - Move meal/build-photo thumbnails out of inline base64 (stored as text in
   Postgres today) and into object storage (S3/R2/Cloudinary) once photo
   volume matters
@@ -127,3 +128,32 @@ Already handled:
 - `apps/backend/src/services/notifications.ts`'s de-dupe is backed by the
   `SentNotification` table (unique on event+flag+date) instead of an
   in-memory Set, so it's safe across multiple backend instances
+
+### RevenueCat + AdMob
+
+RevenueCat (`apps/mobile/src/services/subscriptions.ts`) is wired
+end-to-end: `configurePurchases(userId)` runs once per session
+(`EntitlementContext`, keyed off the same `userId` the backend webhook
+matches on), `presentPaywall()` shows RevenueCat's dashboard-configured
+paywall (Lifetime/Yearly/Monthly packages — copy/pricing/layout all live in
+the RevenueCat dashboard, no app update needed to change them), and
+`presentCustomerCenter()` gives subscribed users self-serve manage/cancel/
+restore. Both are surfaced from the Profile tab's "Premium" section. The
+webhook at `apps/backend/src/routes/subscriptions.ts` is still the source
+of truth for entitlement state (`GET /entitlement`) — the SDK calls above
+are for presenting purchase UI, not for gating ads/features client-side.
+
+To actually go live:
+- Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` (public SDK keys,
+  safe client-side) and `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` (must match
+  the entitlement identifier in the RevenueCat dashboard) in
+  `apps/mobile/.env.local`
+- Configure the Lifetime/Yearly/Monthly products + a "Healthapp Pro"
+  entitlement + an offering/paywall in the RevenueCat dashboard, and the
+  matching in-app-purchase products in App Store Connect / Play Console
+- Point the RevenueCat webhook at `POST /webhooks/revenuecat` and set
+  `REVENUECAT_WEBHOOK_SECRET` in `apps/backend/.env`
+- Set `ADMOB_IOS_APP_ID` / `ADMOB_ANDROID_APP_ID` (native, build-time —
+  read by `apps/mobile/app.config.js`, not `EXPO_PUBLIC_*`) and
+  `EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID`; all three currently fall back to
+  Google's test IDs
