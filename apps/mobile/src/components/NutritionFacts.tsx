@@ -65,6 +65,21 @@ const DAILY_VALUES: Partial<Record<NutrientKey, number>> = {
   vitC_mg: 90,
 };
 
+/**
+ * Nutrients worth color-coding toward "get enough of" (red at 0%, amber
+ * partway, green at 100%+). Deliberately excludes carbs/fat/saturated fat/
+ * sugar/sodium/cholesterol — those are limit-conscious, not "more is
+ * better up to 100%" nutrients, so a green 100% there would send the wrong
+ * signal.
+ */
+const GET_ENOUGH_KEYS = new Set<NutrientKey>(["protein_g", "fiber_g", "vitD_mcg", "calcium_mg", "iron_mg", "potassium_mg", "vitA_mcg", "vitC_mg"]);
+
+function dvColor(pct: number): string {
+  if (pct <= 0) return colors.rust;
+  if (pct < 100) return colors.amber;
+  return colors.green;
+}
+
 /** Nutrition-facts-label-style breakdown of all 15 tracked nutrients, not just the four headline macros — with %DV shown for every nutrient (0% if none consumed yet). */
 export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
   return (
@@ -76,6 +91,7 @@ export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
       {NUTRIENT_KEYS.filter((key) => key !== "calories").map((key) => {
         const dv = DAILY_VALUES[key];
         const pct = dv ? Math.round((totals[key] / dv) * 100) : null;
+        const colorCoded = pct !== null && GET_ENOUGH_KEYS.has(key);
         return (
           <View key={key} style={{ flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 1, borderBottomColor: colors.line, paddingBottom: 2 }}>
             <Text style={{ color: colors.muted, fontSize: 13 }}>{LABELS[key]}</Text>
@@ -84,12 +100,18 @@ export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
                 {Math.round(totals[key] * 10) / 10}
                 {UNITS[key]}
               </Text>
-              {pct !== null ? <Text style={{ color: colors.muted, fontSize: 13, minWidth: 36, textAlign: "right" }}>{pct}%</Text> : null}
+              {pct !== null ? (
+                <Text style={{ color: colorCoded ? dvColor(pct) : colors.muted, fontWeight: colorCoded ? "700" : "400", fontSize: 13, minWidth: 36, textAlign: "right" }}>
+                  {pct}%
+                </Text>
+              ) : null}
             </View>
           </View>
         );
       })}
-      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>% Daily Value based on a 2,000 calorie diet.</Text>
+      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>
+        % Daily Value based on a 2,000 calorie diet. Protein, fiber, and vitamins/minerals are colored — red at 0%, amber until you hit 100%, green at 100%+.
+      </Text>
     </View>
   );
 }
