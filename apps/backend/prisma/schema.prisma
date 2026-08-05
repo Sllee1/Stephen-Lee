@@ -223,3 +223,19 @@ model UsdaSearchCache {
   fdcIds    Int[]
   fetchedAt DateTime @default(now())
 }
+
+/// One row per (event, notifyStart|notifyEnd) fired on a given date. Backs
+/// the notification scheduler's de-dupe check — the unique constraint is
+/// what actually prevents a double-send if two scheduler ticks (or two
+/// backend instances) race on the same minute, which an in-memory Set can't
+/// guarantee across processes.
+model SentNotification {
+  id        String   @id @default(cuid())
+  eventId   String
+  flag      String // "notifyStart" | "notifyEnd"
+  date      String // "YYYY-MM-DD" the day it fired
+  createdAt DateTime @default(now())
+
+  @@unique([eventId, flag, date])
+  @@index([date])
+}

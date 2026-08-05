@@ -1,16 +1,26 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
+import rateLimit from "@fastify/rate-limit";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { analyzeBuildPhoto, analyzeFoodPhoto, analyzeTechniqueVideo, lookupFoodByName } from "../services/anthropic.js";
 
 const imageSchema = z.object({ imageBase64: z.string().min(1) });
 
 export default async function aiRoutes(app: FastifyInstance) {
+  // Registered first so it runs before the rate limiter's onRequest hook
+  // below (Fastify hooks in the same encapsulation context fire in
+  // registration order) — the limiter's keyGenerator needs request.userId.
   app.addHook("onRequest", requireAuth);
 
-  // TODO before ship: rate-limit these per user (e.g. @fastify/rate-limit)
-  // and/or count usage against the free tier — every call here is a paid
-  // Anthropic API request, unlike the rest of the API.
+  // Every route in this file is a paid Anthropic API call, unlike the rest
+  // of the API, so cap it per user rather than per IP (mobile clients can
+  // share a NAT'd IP, and per-IP would either starve them or be too loose).
+  await app.register(rateLimit, {
+    global: true,
+    max: 20,
+    timeWindow: "1 minute",
+    keyGenerator: (request) => request.userId ?? request.ip,
+  });
 
   app.post("/ai/analyze-food-photo", async (request) => {
     const { imageBase64 } = imageSchema.parse(request.body);

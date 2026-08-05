@@ -1,5 +1,5 @@
 import cron from "node-cron";
-import type { PrismaClient } from "@prisma/client";
+import { Prisma, type PrismaClient } from "@prisma/client";
 import { motivationMessage, timeToMinutes, todayKey, getPreviousResult, type MotivationMode } from "@nutrition-app/shared";
 import { env } from "../env.js";
 
@@ -11,13 +11,12 @@ const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
  * app is backgrounded/closed. This cron runs server-side once a minute,
  * finds every date-event whose start/end time matches "now" for its owner,
  * and sends an Expo push notification. Same de-dupe idea as the prototype's
- * `firedRef`, but backed by a `sentAt`-less in-memory set keyed by day —
- * good enough for a single backend instance; move to a `sent_notifications`
- * table (or a Redis set) before running more than one instance.
+ * `firedRef`, but backed by the `SentNotification` table instead of an
+ * in-memory Set — its unique constraint on (eventId, flag, date) is what
+ * actually prevents a double-send if two ticks (or two backend instances)
+ * race on the same minute, which an in-memory Set can't guarantee across
+ * processes.
  */
-const firedToday = new Set<string>();
-let firedDate = todayKey();
-
 async function sendExpoPush(tokens: string[], title: string, body: string) {
   if (tokens.length === 0) return;
   await fetch(EXPO_PUSH_URL, {
@@ -31,12 +30,19 @@ async function sendExpoPush(tokens: string[], title: string, body: string) {
   });
 }
 
+// Best-effort, once-per-day: drop rows from days that have already passed
+// so the table doesn't grow forever. Not required for correctness (only
+// `date`-matching rows are ever queried), just housekeeping.
+let lastCleanupDate = "";
+async function cleanupOldNotifications(prisma: PrismaClient, today: string) {
+  if (lastCleanupDate === today) return;
+  lastCleanupDate = today;
+  await prisma.sentNotification.deleteMany({ where: { date: { lt: today } } });
+}
+
 async function checkAndFire(prisma: PrismaClient) {
   const today = todayKey();
-  if (today !== firedDate) {
-    firedToday.clear();
-    firedDate = today;
-  }
+  await cleanupOldNotifications(prisma, today);
 
   const now = new Date();
   const nowMinutes = now.getHours() * 60 + now.getMinutes();
@@ -50,11 +56,16 @@ async function checkAndFire(prisma: PrismaClient) {
     ] as const) {
       const shouldNotify = event[flag] && time;
       if (!shouldNotify) continue;
-      const fireKey = `${event.id}-${flag}`;
-      if (firedToday.has(fireKey)) continue;
       if (Math.abs(nowMinutes - timeToMinutes(time)) > 1) continue;
 
-      firedToday.add(fireKey);
+      try {
+        await prisma.sentNotification.create({ data: { eventId: event.id, flag, date: today } });
+      } catch (err) {
+        // P2002 = unique constraint violation on (eventId, flag, date) —
+        // already fired this minute (by this tick or a concurrent instance).
+        if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") continue;
+        throw err;
+      }
 
       const [profile, workoutHistory] = await Promise.all([
         prisma.profile.findUnique({ where: { userId: event.userId } }),

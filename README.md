@@ -116,11 +116,14 @@ different extraction mechanism.
 - Replace the placeholder assets in `apps/mobile/assets/` (real icon/splash)
 - Configure RevenueCat products/entitlement identifiers and AdMob ad units,
   then set the corresponding `EXPO_PUBLIC_*` env vars
-- Add rate limiting to `/ai/*` routes — each call is a paid Anthropic
-  request, unlike the rest of the API
 - Move meal/build-photo thumbnails out of inline base64 (stored as text in
   Postgres today) and into object storage (S3/R2/Cloudinary) once photo
   volume matters
-- `apps/backend/src/services/notifications.ts`'s de-dupe is in-memory —
-  fine for one instance, move to a DB table or Redis set before scaling
-  the backend horizontally
+
+Already handled:
+- `/ai/*` routes are rate-limited per user (`@fastify/rate-limit`, 20
+  requests/minute — see `apps/backend/src/routes/ai.ts`), since each call
+  is a paid Anthropic request unlike the rest of the API
+- `apps/backend/src/services/notifications.ts`'s de-dupe is backed by the
+  `SentNotification` table (unique on event+flag+date) instead of an
+  in-memory Set, so it's safe across multiple backend instances
