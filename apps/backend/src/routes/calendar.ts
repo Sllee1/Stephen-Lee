@@ -1,7 +1,10 @@
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
+import type { Prisma } from "@prisma/client";
 import { runAutoFill, resolveFillRange, type FillRange } from "@nutrition-app/shared";
 import { requireAuth } from "../middleware/requireAuth.js";
+
+type TransactionClient = Prisma.TransactionClient;
 
 const templateEventSchema = z.object({
   day: z.number().int().min(0).max(6),
@@ -51,7 +54,7 @@ export default async function calendarRoutes(app: FastifyInstance) {
   // days" quick-add, which is a type-scoped full replace, not a merge.
   app.put("/calendar/template/replace-type", async (request) => {
     const body = z.object({ type: z.enum(["workout", "eating"]), events: z.array(templateEventSchema) }).parse(request.body);
-    return app.prisma.$transaction(async (tx) => {
+    return app.prisma.$transaction(async (tx: TransactionClient) => {
       await tx.templateEvent.deleteMany({ where: { userId: request.userId, type: body.type } });
       await tx.templateEvent.createMany({ data: body.events.map((e) => ({ userId: request.userId, ...e })) });
       return tx.templateEvent.findMany({ where: { userId: request.userId } });
@@ -111,7 +114,7 @@ export default async function calendarRoutes(app: FastifyInstance) {
     const updated = runAutoFill(templateEvents as any, existingByDate as any, start, end);
     const touchedDates = Object.keys(updated).filter((d) => !existingByDate[d] || existingByDate[d] !== updated[d]);
 
-    await app.prisma.$transaction(async (tx) => {
+    await app.prisma.$transaction(async (tx: TransactionClient) => {
       for (const date of touchedDates) {
         await tx.dateEvent.deleteMany({ where: { userId: request.userId, date } });
         await tx.dateEvent.createMany({
