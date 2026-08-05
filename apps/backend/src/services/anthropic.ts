@@ -8,7 +8,7 @@ import type {
 } from "@nutrition-app/shared";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const MODEL = "claude-sonnet-4-6";
+const MODEL = "claude-sonnet-5";
 
 /**
  * All four AI features ran directly against this endpoint from the browser
@@ -34,6 +34,12 @@ async function callClaude(content: unknown[], maxTokens: number): Promise<string
     body: JSON.stringify({
       model: MODEL,
       max_tokens: maxTokens,
+      // Sonnet 5 thinks by default (unlike 4.6), and max_tokens caps thinking
+      // + response together — pin effort down for these bounded, latency-
+      // sensitive extraction calls rather than paying for the "high" default
+      // on every meal log.
+      thinking: { type: "adaptive" },
+      output_config: { effort: "medium" },
       messages: [{ role: "user", content }],
     }),
   });
@@ -63,7 +69,7 @@ Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactl
 
 Use standard portion-size assumptions based on what's visible, and typical nutrient profiles for each identified food (e.g. citrus/peppers are higher vitamin C, leafy greens higher vitamin A/iron, dairy higher calcium, meat higher iron/B-vitamins-adjacent nutrients). "total" must equal the sum of "items". Keep "notes" to one short sentence about assumptions made. If the image doesn't clearly show food, set confidence to "low" and explain briefly in notes.`;
 
-  const text = await callClaude([imageBlock(imageBase64), { type: "text", text: prompt }], 1800);
+  const text = await callClaude([imageBlock(imageBase64), { type: "text", text: prompt }], 3000);
   return JSON.parse(text) as AnalyzeFoodPhotoResponse;
 }
 
@@ -82,7 +88,7 @@ Rules:
 - "bmiOffset" is your own best-effort numeric estimate of how many BMI points standard BMI is likely over- or under-stating body fat for this specific person, given their visible build — negative for muscular builds where BMI overstates fatness, positive for lower-muscle-tone builds where BMI may understate it. Give your genuine best estimate for this individual rather than a generic bucketed value — an extremely muscular physique can reasonably warrant a large adjustment. Use 0 for an average build.
 - "note" must be one short, neutral sentence (max 20 words) describing only what's relevant to the BMI context, including a brief basis for the offset. Never comment on attractiveness, weight judgment, or anything beyond muscle/build context.`;
 
-  const text = await callClaude([imageBlock(imageBase64), { type: "text", text: prompt }], 500);
+  const text = await callClaude([imageBlock(imageBase64), { type: "text", text: prompt }], 2000);
   return JSON.parse(text) as AnalyzeBuildPhotoResponse;
 }
 
@@ -96,7 +102,7 @@ Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactl
 
 Base values on standard reference nutrition data for that food. Set "found" to false only if this doesn't resemble a real food at all (in which case still fill numeric fields with 0).`;
 
-  const text = await callClaude([{ type: "text", text: prompt }], 600);
+  const text = await callClaude([{ type: "text", text: prompt }], 2000);
   return JSON.parse(text) as LookupFoodResponse;
 }
 
@@ -114,6 +120,6 @@ Keep each list short (max 4 items) and specific to what's visible across the fra
     content.push(imageBlock(frame.imageBase64));
   });
 
-  const text = await callClaude(content, 1200);
+  const text = await callClaude(content, 3000);
   return JSON.parse(text) as AnalyzeTechniqueVideoResponse;
 }
