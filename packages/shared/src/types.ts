@@ -35,7 +35,7 @@ export interface Profile {
   bmiPreference: BmiPreference;
 }
 
-/** The 15 nutrient fields tracked on every food item / meal / daily total. */
+/** The 29 nutrient fields tracked on every food item / meal / daily total. */
 export const NUTRIENT_KEYS = [
   "calories",
   "protein_g",
@@ -52,6 +52,20 @@ export const NUTRIENT_KEYS = [
   "potassium_mg",
   "vitA_mcg",
   "vitC_mg",
+  "vitB1_mg",
+  "vitB2_mg",
+  "vitB3_mg",
+  "vitB5_mg",
+  "vitB6_mg",
+  "vitB7_mcg",
+  "vitB9_mcg",
+  "vitB12_mcg",
+  "vitE_mg",
+  "vitK_mcg",
+  "magnesium_mg",
+  "zinc_mg",
+  "iodine_mcg",
+  "phosphorus_mg",
 ] as const;
 
 export type NutrientKey = (typeof NUTRIENT_KEYS)[number];

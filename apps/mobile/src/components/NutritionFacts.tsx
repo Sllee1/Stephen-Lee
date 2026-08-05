@@ -19,6 +19,20 @@ const LABELS: Record<NutrientKey, string> = {
   potassium_mg: "Potassium",
   vitA_mcg: "Vitamin A",
   vitC_mg: "Vitamin C",
+  vitB1_mg: "Vitamin B1 (Thiamin)",
+  vitB2_mg: "Vitamin B2 (Riboflavin)",
+  vitB3_mg: "Vitamin B3 (Niacin)",
+  vitB5_mg: "Vitamin B5 (Pantothenic Acid)",
+  vitB6_mg: "Vitamin B6",
+  vitB7_mcg: "Vitamin B7 (Biotin)",
+  vitB9_mcg: "Vitamin B9 (Folate)",
+  vitB12_mcg: "Vitamin B12",
+  vitE_mg: "Vitamin E",
+  vitK_mcg: "Vitamin K",
+  magnesium_mg: "Magnesium",
+  zinc_mg: "Zinc",
+  iodine_mcg: "Iodine",
+  phosphorus_mg: "Phosphorus",
 };
 
 const UNITS: Record<NutrientKey, string> = {
@@ -37,6 +51,20 @@ const UNITS: Record<NutrientKey, string> = {
   potassium_mg: "mg",
   vitA_mcg: "mcg",
   vitC_mg: "mg",
+  vitB1_mg: "mg",
+  vitB2_mg: "mg",
+  vitB3_mg: "mg",
+  vitB5_mg: "mg",
+  vitB6_mg: "mg",
+  vitB7_mcg: "mcg",
+  vitB9_mcg: "mcg",
+  vitB12_mcg: "mcg",
+  vitE_mg: "mg",
+  vitK_mcg: "mcg",
+  magnesium_mg: "mg",
+  zinc_mg: "mg",
+  iodine_mcg: "mcg",
+  phosphorus_mg: "mg",
 };
 
 /**
@@ -63,6 +91,20 @@ const DAILY_VALUES: Partial<Record<NutrientKey, number>> = {
   potassium_mg: 4700,
   vitA_mcg: 900,
   vitC_mg: 90,
+  vitB1_mg: 1.2,
+  vitB2_mg: 1.3,
+  vitB3_mg: 16,
+  vitB5_mg: 5,
+  vitB6_mg: 1.7,
+  vitB7_mcg: 30,
+  vitB9_mcg: 400,
+  vitB12_mcg: 2.4,
+  vitE_mg: 15,
+  vitK_mcg: 120,
+  magnesium_mg: 420,
+  zinc_mg: 11,
+  iodine_mcg: 150,
+  phosphorus_mg: 1250,
 };
 
 /**
@@ -73,7 +115,31 @@ const DAILY_VALUES: Partial<Record<NutrientKey, number>> = {
  * signal. Total fat is included since (unlike saturated fat) it's a target
  * to hit, not just a ceiling.
  */
-const GET_ENOUGH_KEYS = new Set<NutrientKey>(["protein_g", "fat_g", "fiber_g", "vitD_mcg", "calcium_mg", "iron_mg", "potassium_mg", "vitA_mcg", "vitC_mg"]);
+const GET_ENOUGH_KEYS = new Set<NutrientKey>([
+  "protein_g",
+  "fat_g",
+  "fiber_g",
+  "vitD_mcg",
+  "calcium_mg",
+  "iron_mg",
+  "potassium_mg",
+  "vitA_mcg",
+  "vitC_mg",
+  "vitB1_mg",
+  "vitB2_mg",
+  "vitB3_mg",
+  "vitB5_mg",
+  "vitB6_mg",
+  "vitB7_mcg",
+  "vitB9_mcg",
+  "vitB12_mcg",
+  "vitE_mg",
+  "vitK_mcg",
+  "magnesium_mg",
+  "zinc_mg",
+  "iodine_mcg",
+  "phosphorus_mg",
+]);
 
 function dvColor(pct: number): string {
   if (pct <= 0) return colors.rust;
@@ -81,7 +147,7 @@ function dvColor(pct: number): string {
   return colors.green;
 }
 
-/** Nutrition-facts-label-style breakdown of all 15 tracked nutrients, not just the four headline macros — with %DV shown for every nutrient (0% if none consumed yet). */
+/** Nutrition-facts-label-style breakdown of all 29 tracked nutrients, not just the four headline macros — with %DV shown for every nutrient (0% if none consumed yet). */
 export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
   return (
     <View style={{ gap: 3 }}>

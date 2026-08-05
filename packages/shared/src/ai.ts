@@ -9,28 +9,15 @@
  * gated by entitlement.
  */
 
+import type { NutrientTotals } from "./types";
+
 export interface AnalyzeFoodPhotoRequest {
   imageBase64: string; // JPEG, data URL prefix stripped
 }
 
-export interface AnalyzedFoodItem {
+export interface AnalyzedFoodItem extends NutrientTotals {
   name: string;
   quantity: string;
-  calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  satFat_g: number;
-  fiber_g: number;
-  sugar_g: number;
-  sodium_mg: number;
-  cholesterol_mg: number;
-  vitD_mcg: number;
-  calcium_mg: number;
-  iron_mg: number;
-  potassium_mg: number;
-  vitA_mcg: number;
-  vitC_mg: number;
 }
 
 export type AnalyzedFoodTotals = Omit<AnalyzedFoodItem, "name" | "quantity">;
@@ -58,23 +45,8 @@ export interface LookupFoodRequest {
   servingHint?: string;
 }
 
-export interface LookupFoodResponse {
+export interface LookupFoodResponse extends NutrientTotals {
   serving: string;
-  calories: number;
-  protein_g: number;
-  carbs_g: number;
-  fat_g: number;
-  satFat_g: number;
-  fiber_g: number;
-  sugar_g: number;
-  sodium_mg: number;
-  cholesterol_mg: number;
-  vitD_mcg: number;
-  calcium_mg: number;
-  iron_mg: number;
-  potassium_mg: number;
-  vitA_mcg: number;
-  vitC_mg: number;
   found: boolean;
 }
 

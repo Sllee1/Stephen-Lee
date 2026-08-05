@@ -1,14 +1,18 @@
 import { env } from "../env.js";
-import type {
-  AnalyzeBuildPhotoResponse,
-  AnalyzeFoodPhotoResponse,
-  AnalyzeTechniqueVideoRequest,
-  AnalyzeTechniqueVideoResponse,
-  LookupFoodResponse,
+import {
+  NUTRIENT_KEYS,
+  type AnalyzeBuildPhotoResponse,
+  type AnalyzeFoodPhotoResponse,
+  type AnalyzeTechniqueVideoRequest,
+  type AnalyzeTechniqueVideoResponse,
+  type LookupFoodResponse,
 } from "@nutrition-app/shared";
 
 const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
 const MODEL = "claude-sonnet-5";
+
+/** All 29 tracked nutrient fields as a `"key":number,...` JSON-shape fragment, built from NUTRIENT_KEYS so prompts and the data model can never drift apart. */
+const NUTRIENT_SHAPE = NUTRIENT_KEYS.map((k) => `"${k}":number`).join(",");
 
 /**
  * All four AI features ran directly against this endpoint from the browser
@@ -65,9 +69,9 @@ export async function analyzeFoodPhoto(imageBase64: string): Promise<AnalyzeFood
   const prompt = `You are a nutrition estimation assistant. Look at this photo of a meal and estimate its full nutrition, similar to what would appear on a packaged-food nutrition facts label.
 
 Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactly this shape, with every numeric field present (use 0 if genuinely negligible/unknown, never omit a field):
-{"items":[{"name":string,"quantity":string,"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"satFat_g":number,"fiber_g":number,"sugar_g":number,"sodium_mg":number,"cholesterol_mg":number,"vitD_mcg":number,"calcium_mg":number,"iron_mg":number,"potassium_mg":number,"vitA_mcg":number,"vitC_mg":number}],"total":{"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"satFat_g":number,"fiber_g":number,"sugar_g":number,"sodium_mg":number,"cholesterol_mg":number,"vitD_mcg":number,"calcium_mg":number,"iron_mg":number,"potassium_mg":number,"vitA_mcg":number,"vitC_mg":number},"confidence":"low"|"medium"|"high","notes":string}
+{"items":[{"name":string,"quantity":string,${NUTRIENT_SHAPE}}],"total":{${NUTRIENT_SHAPE}},"confidence":"low"|"medium"|"high","notes":string}
 
-Use standard portion-size assumptions based on what's visible, and typical nutrient profiles for each identified food (e.g. citrus/peppers are higher vitamin C, leafy greens higher vitamin A/iron, dairy higher calcium, meat higher iron/B-vitamins-adjacent nutrients). "total" must equal the sum of "items". Keep "notes" to one short sentence about assumptions made. If the image doesn't clearly show food, set confidence to "low" and explain briefly in notes.`;
+Use standard portion-size assumptions based on what's visible, and typical nutrient profiles for each identified food (e.g. citrus/peppers are higher vitamin C, leafy greens higher vitamin A/iron, dairy higher calcium, meat higher iron and B-vitamins, whole grains and legumes higher B1/B3/magnesium/zinc, fatty fish higher vitamin D/E, leafy/cruciferous greens higher vitamin K, nuts/seeds higher magnesium/zinc/vitamin E). "total" must equal the sum of "items". Keep "notes" to one short sentence about assumptions made. If the image doesn't clearly show food, set confidence to "low" and explain briefly in notes.`;
 
   const text = await callClaude([imageBlock(imageBase64), { type: "text", text: prompt }], 3000);
   return JSON.parse(text) as AnalyzeFoodPhotoResponse;
@@ -98,7 +102,7 @@ export async function lookupFoodByName(name: string, servingHint?: string): Prom
 If no serving was given, pick one standard, realistic serving size (e.g. "1 medium", "1 cup", "100g", "1 slice") and report exactly what you used in "serving". If the requested serving is unclear or unusual, use your best interpretation and still report what you assumed.
 
 Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactly this shape, with every numeric field present (use 0 if genuinely negligible, never omit a field):
-{"serving":string,"calories":number,"protein_g":number,"carbs_g":number,"fat_g":number,"satFat_g":number,"fiber_g":number,"sugar_g":number,"sodium_mg":number,"cholesterol_mg":number,"vitD_mcg":number,"calcium_mg":number,"iron_mg":number,"potassium_mg":number,"vitA_mcg":number,"vitC_mg":number,"found":boolean}
+{"serving":string,${NUTRIENT_SHAPE},"found":boolean}
 
 Base values on standard reference nutrition data for that food. Set "found" to false only if this doesn't resemble a real food at all (in which case still fill numeric fields with 0).`;
 
