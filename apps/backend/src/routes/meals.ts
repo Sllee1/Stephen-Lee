@@ -3,9 +3,13 @@ import type { FastifyInstance } from "fastify";
 import { NUTRIENT_KEYS, sumNutrients, todayKey } from "@nutrition-app/shared";
 import { requireAuth } from "../middleware/requireAuth.js";
 
-const nutrientShape = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, z.number()])) as Record<
+// .default(0) rather than a bare z.number(): AI-estimated items (food-photo
+// analysis, free-text lookup) occasionally omit a field despite the prompt
+// asking for all of them, and a whole meal silently failing to save over one
+// missing micronutrient is worse than treating it as 0.
+const nutrientShape = Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, z.number().default(0)])) as Record<
   (typeof NUTRIENT_KEYS)[number],
-  z.ZodNumber
+  z.ZodDefault<z.ZodNumber>
 >;
 
 const mealItemSchema = z.object({

@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { todayKey, type MealItem } from "@nutrition-app/shared";
+import { emptyNutrientTotals, todayKey, type MealItem } from "@nutrition-app/shared";
 import { analyzeFoodPhoto } from "../../src/api/ai";
 import { createMeal } from "../../src/api/meals";
 import { FoodPicker } from "../../src/components/FoodPicker";
@@ -51,6 +51,7 @@ export default function LogScreen() {
       setConfidence(analysis.confidence);
       const newItems: MealItem[] = analysis.items.map((item, i) => ({
         id: `photo-${Date.now()}-${i}`,
+        ...emptyNutrientTotals(),
         ...item,
       }));
       setItems((prev) => [...prev, ...newItems]);

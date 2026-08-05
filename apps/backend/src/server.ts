@@ -2,6 +2,7 @@ import "dotenv/config";
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import jwt from "@fastify/jwt";
+import { ZodError } from "zod";
 import { env } from "./env.js";
 import prismaPlugin from "./plugins/prisma.js";
 import { startNotificationScheduler } from "./services/notifications.js";
@@ -30,6 +31,17 @@ async function buildServer() {
   await app.register(cors, { origin: true });
   await app.register(jwt, { secret: env.JWT_SECRET });
   await app.register(prismaPlugin);
+
+  // Every route .parse()s its body/query with Zod; without this, a
+  // validation error falls through to Fastify's default handler as an
+  // opaque 500, which client code doesn't treat as "your input was bad" —
+  // it looks like a server outage instead of a fixable request.
+  app.setErrorHandler((err, _request, reply) => {
+    if (err instanceof ZodError) {
+      return reply.code(400).send({ error: "Invalid request", issues: err.issues });
+    }
+    return reply.send(err);
+  });
 
   app.get("/health", async () => ({ ok: true }));
 
