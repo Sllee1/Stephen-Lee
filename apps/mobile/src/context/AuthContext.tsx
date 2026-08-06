@@ -21,11 +21,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userId, setUserIdState] = useState<string | null>(null);
 
   useEffect(() => {
-    Promise.all([getToken(), getUserId()]).then(([token, storedUserId]) => {
-      setIsAuthenticated(Boolean(token));
-      setUserIdState(storedUserId);
-      setReady(true);
-    });
+    Promise.all([getToken(), getUserId()])
+      .then(([token, storedUserId]) => {
+        setIsAuthenticated(Boolean(token));
+        setUserIdState(storedUserId);
+      })
+      .catch(() => {
+        // A broken/unavailable storage read shouldn't leave the whole app
+        // stuck on the startup spinner forever — fall back to "logged out"
+        // so the user at least reaches the login screen.
+        setIsAuthenticated(false);
+        setUserIdState(null);
+      })
+      .finally(() => setReady(true));
   }, []);
 
   const value = useMemo<AuthContextValue>(
