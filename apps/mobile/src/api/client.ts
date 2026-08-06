@@ -7,30 +7,50 @@ const USER_ID_KEY = "auth_user_id";
 let cachedToken: string | null = null;
 let cachedUserId: string | null = null;
 
+// AsyncStorage's web backend (IndexedDB) can occasionally hang indefinitely
+// in some browser contexts — with no timeout, that permanently freezes the
+// app's very first startup check (AuthContext waits on getToken()/getUserId()
+// before rendering anything). Falling back after a few seconds means a
+// broken storage read degrades to "treat as logged out" instead of bricking
+// the whole app forever.
+function withTimeout<T>(promise: Promise<T>, ms: number, fallback: T): Promise<T> {
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(fallback), ms);
+    promise.then(
+      (value) => {
+        clearTimeout(timer);
+        resolve(value);
+      },
+      () => {
+        clearTimeout(timer);
+        resolve(fallback);
+      }
+    );
+  });
+}
+
 export async function getToken(): Promise<string | null> {
   if (cachedToken !== null) return cachedToken;
-  cachedToken = await AsyncStorage.getItem(TOKEN_KEY);
+  cachedToken = await withTimeout(AsyncStorage.getItem(TOKEN_KEY), 5000, null);
   return cachedToken;
 }
 
 export async function setToken(token: string | null): Promise<void> {
   cachedToken = token;
-  if (token) await AsyncStorage.setItem(TOKEN_KEY, token);
-  else await AsyncStorage.removeItem(TOKEN_KEY);
+  await withTimeout(token ? AsyncStorage.setItem(TOKEN_KEY, token) : AsyncStorage.removeItem(TOKEN_KEY), 5000, undefined);
 }
 
 // Stored alongside the token so a cold boot can restore `userId` for
 // RevenueCat's `configurePurchases(appUserId)` without a network round-trip.
 export async function getUserId(): Promise<string | null> {
   if (cachedUserId !== null) return cachedUserId;
-  cachedUserId = await AsyncStorage.getItem(USER_ID_KEY);
+  cachedUserId = await withTimeout(AsyncStorage.getItem(USER_ID_KEY), 5000, null);
   return cachedUserId;
 }
 
 export async function setUserId(userId: string | null): Promise<void> {
   cachedUserId = userId;
-  if (userId) await AsyncStorage.setItem(USER_ID_KEY, userId);
-  else await AsyncStorage.removeItem(USER_ID_KEY);
+  await withTimeout(userId ? AsyncStorage.setItem(USER_ID_KEY, userId) : AsyncStorage.removeItem(USER_ID_KEY), 5000, undefined);
 }
 
 export class ApiError extends Error {
@@ -44,7 +64,7 @@ export async function api<T>(path: string, options: RequestInit = {}): Promise<T
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
-      "Content-Type": "application/json",
+      ...(options.body ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options.headers,
     },
