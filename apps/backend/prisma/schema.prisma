@@ -72,6 +72,20 @@ model Meal {
   potassium_mg   Float
   vitA_mcg       Float
   vitC_mg        Float
+  vitB1_mg       Float @default(0)
+  vitB2_mg       Float @default(0)
+  vitB3_mg       Float @default(0)
+  vitB5_mg       Float @default(0)
+  vitB6_mg       Float @default(0)
+  vitB7_mcg      Float @default(0)
+  vitB9_mcg      Float @default(0)
+  vitB12_mcg     Float @default(0)
+  vitE_mg        Float @default(0)
+  vitK_mcg       Float @default(0)
+  magnesium_mg   Float @default(0)
+  zinc_mg        Float @default(0)
+  iodine_mcg     Float @default(0)
+  phosphorus_mg  Float @default(0)
 
   items MealItem[]
 
@@ -100,6 +114,20 @@ model MealItem {
   potassium_mg   Float
   vitA_mcg       Float
   vitC_mg        Float
+  vitB1_mg       Float @default(0)
+  vitB2_mg       Float @default(0)
+  vitB3_mg       Float @default(0)
+  vitB5_mg       Float @default(0)
+  vitB6_mg       Float @default(0)
+  vitB7_mcg      Float @default(0)
+  vitB9_mcg      Float @default(0)
+  vitB12_mcg     Float @default(0)
+  vitE_mg        Float @default(0)
+  vitK_mcg       Float @default(0)
+  magnesium_mg   Float @default(0)
+  zinc_mg        Float @default(0)
+  iodine_mcg     Float @default(0)
+  phosphorus_mg  Float @default(0)
 }
 
 /// Recurring, day-of-week template entry ("Week Template" view).
@@ -212,6 +240,20 @@ model UsdaFoodCache {
   potassium_mg   Float
   vitA_mcg       Float
   vitC_mg        Float
+  vitB1_mg       Float @default(0)
+  vitB2_mg       Float @default(0)
+  vitB3_mg       Float @default(0)
+  vitB5_mg       Float @default(0)
+  vitB6_mg       Float @default(0)
+  vitB7_mcg      Float @default(0)
+  vitB9_mcg      Float @default(0)
+  vitB12_mcg     Float @default(0)
+  vitE_mg        Float @default(0)
+  vitK_mcg       Float @default(0)
+  magnesium_mg   Float @default(0)
+  zinc_mg        Float @default(0)
+  iodine_mcg     Float @default(0)
+  phosphorus_mg  Float @default(0)
   fetchedAt DateTime @default(now())
 }
 

@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { todayKey, type MealItem } from "@nutrition-app/shared";
+import { emptyNutrientTotals, todayKey, type MealItem } from "@nutrition-app/shared";
 import { analyzeFoodPhoto } from "../../src/api/ai";
 import { createMeal } from "../../src/api/meals";
 import { FoodPicker } from "../../src/components/FoodPicker";
+import { NutritionFacts } from "../../src/components/NutritionFacts";
 import { colors } from "../../src/theme";
 
 /**
@@ -50,6 +51,7 @@ export default function LogScreen() {
       setConfidence(analysis.confidence);
       const newItems: MealItem[] = analysis.items.map((item, i) => ({
         id: `photo-${Date.now()}-${i}`,
+        ...emptyNutrientTotals(),
         ...item,
       }));
       setItems((prev) => [...prev, ...newItems]);
@@ -119,15 +121,7 @@ export default function LogScreen() {
         <View style={{ gap: 10 }}>
           <Text style={{ fontWeight: "700", color: colors.ink }}>Detected items ({Math.round(totalCalories)} cal total)</Text>
           {items.map((item) => (
-            <View key={item.id} style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12 }}>
-              <View>
-                <Text style={{ fontWeight: "600", color: colors.ink }}>{item.name}</Text>
-                <Text style={{ color: colors.muted }}>{Math.round(item.calories)} cal</Text>
-              </View>
-              <Pressable onPress={() => removeItem(item.id)}>
-                <Text style={{ color: colors.rust }}>Remove</Text>
-              </Pressable>
-            </View>
+            <DetectedItemCard key={item.id} item={item} onRemove={() => removeItem(item.id)} />
           ))}
 
           <Pressable onPress={confirmSave} disabled={saving} style={{ backgroundColor: colors.green, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 }}>
@@ -150,5 +144,30 @@ export default function LogScreen() {
         />
       </Modal>
     </ScrollView>
+  );
+}
+
+function DetectedItemCard({ item, onRemove }: { item: MealItem; onRemove: () => void }) {
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, gap: 8 }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontWeight: "600", color: colors.ink }}>{item.name}</Text>
+          <Text style={{ color: colors.muted }}>
+            {Math.round(item.calories)} cal · P{Math.round(item.protein_g)} C{Math.round(item.carbs_g)} F{Math.round(item.fat_g)}
+          </Text>
+        </View>
+        <Pressable onPress={onRemove}>
+          <Text style={{ color: colors.rust }}>Remove</Text>
+        </Pressable>
+      </View>
+
+      <Pressable onPress={() => setExpanded((v) => !v)}>
+        <Text style={{ color: colors.rust, fontWeight: "600", fontSize: 13 }}>{expanded ? "Hide" : "Show"} nutrition facts</Text>
+      </Pressable>
+      {expanded ? <NutritionFacts totals={item} /> : null}
+    </View>
   );
 }

@@ -30,6 +30,23 @@ const NUTRIENT_NUMBER_MAP: Record<string, NutrientKey> = {
   "306": "potassium_mg",
   "320": "vitA_mcg",
   "401": "vitC_mg",
+  "404": "vitB1_mg",
+  "405": "vitB2_mg",
+  "406": "vitB3_mg",
+  "410": "vitB5_mg",
+  "415": "vitB6_mg",
+  // No mapping for vitB7_mcg (Biotin) — USDA FoodData Central almost never
+  // reports it (no stable, reliably-populated nutrient number across
+  // datasets), so leaving it unmapped means it correctly reports 0 rather
+  // than silently mapping to the wrong nutrient.
+  "417": "vitB9_mcg", // "Folate, total" — DFE-adjusted folate (435) exists but is populated far less consistently across food types.
+  "418": "vitB12_mcg",
+  "323": "vitE_mg",
+  "430": "vitK_mcg",
+  "304": "magnesium_mg",
+  "309": "zinc_mg",
+  "314": "iodine_mcg",
+  "305": "phosphorus_mg",
 };
 
 interface FdcFoodNutrient {

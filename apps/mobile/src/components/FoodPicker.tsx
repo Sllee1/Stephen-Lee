@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ActivityIndicator, Alert, Pressable, ScrollView, Text, TextInput, View } from "react-native";
-import { FOOD_DATABASE, NUTRIENT_KEYS, type FoodDatabaseEntry, type MealItem, type NutrientTotals, type UsdaFoodResult } from "@nutrition-app/shared";
+import { emptyNutrientTotals, FOOD_DATABASE, NUTRIENT_KEYS, type FoodDatabaseEntry, type MealItem, type NutrientTotals, type UsdaFoodResult } from "@nutrition-app/shared";
 import { lookupFoodByName } from "../api/ai";
 import { searchUsdaFoods } from "../api/foods";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
@@ -231,6 +231,7 @@ function AiLookup({ onAdd }: { onAdd: (item: MealItem) => void }) {
       id: `lookup-${Date.now()}`,
       name: name.trim(),
       quantity: result.serving,
+      ...emptyNutrientTotals(),
       ...result,
       calories: Number(editable.calories) || 0,
       protein_g: Number(editable.protein_g) || 0,

@@ -6,6 +6,7 @@ import {
   computeTargets,
   getPreviousResult,
   prettyDate,
+  sumNutrients,
   todayKey,
   type DateEvent,
   type Meal,
@@ -16,6 +17,7 @@ import { getMeals, deleteMeal } from "../../src/api/meals";
 import { getDateEvents } from "../../src/api/calendar";
 import { getWorkoutHistory } from "../../src/api/weightAndWorkouts";
 import { AdBanner } from "../../src/components/AdBanner";
+import { NutritionFacts } from "../../src/components/NutritionFacts";
 import { colors } from "../../src/theme";
 
 export default function TodayScreen() {
@@ -25,6 +27,7 @@ export default function TodayScreen() {
   const [todayEvents, setTodayEvents] = useState<DateEvent[]>([]);
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showFullFacts, setShowFullFacts] = useState(false);
 
   const loadDay = useCallback(async () => {
     const date = todayKey();
@@ -108,6 +111,11 @@ export default function TodayScreen() {
               <MacroRow label="Protein" value={meals.reduce((s, m) => s + m.protein_g, 0)} target={targets.protein} color={colors.green} />
               <MacroRow label="Carbs" value={meals.reduce((s, m) => s + m.carbs_g, 0)} target={targets.carbs} color={colors.amber} />
               <MacroRow label="Fat" value={meals.reduce((s, m) => s + m.fat_g, 0)} target={targets.fat} color={colors.plum} />
+
+              <Pressable onPress={() => setShowFullFacts((v) => !v)} style={{ marginTop: 4 }}>
+                <Text style={{ color: colors.rust, fontWeight: "600" }}>{showFullFacts ? "Hide" : "Show"} full nutrition facts</Text>
+              </Pressable>
+              {showFullFacts ? <NutritionFacts totals={sumNutrients(meals)} /> : null}
             </View>
 
             <Pressable
