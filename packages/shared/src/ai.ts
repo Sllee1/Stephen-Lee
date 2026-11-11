@@ -9,7 +9,7 @@
  * gated by entitlement.
  */
 
-import type { NutrientTotals } from "./types";
+import type { NutrientTotals } from "./types.js";
 
 export interface AnalyzeFoodPhotoRequest {
   imageBase64: string; // JPEG, data URL prefix stripped

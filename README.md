@@ -55,6 +55,14 @@ npm run dev:mobile                                 # Expo dev server — scan th
                                                      # or press i/a for a simulator
 ```
 
+`packages/shared` is consumed as its **compiled** `dist/` output (not raw TS) —
+`main`/`types` point there so a plain `node dist/server.js` production build
+can actually resolve it (Node can't execute `.ts` directly; `tsx`/Metro/`tsc`
+can, which is why this wasn't caught for a while). `npm install` always
+rebuilds it via a root `prepare` script, but if you edit anything in
+`packages/shared/src` while `dev:backend`/`dev:mobile` is already running,
+re-run `npm run build:shared` for the change to show up.
+
 ## What's fully wired vs. scaffolded
 
 **Fully wired end-to-end** (mobile screen → API route → Postgres, or → the
@@ -115,6 +123,19 @@ different extraction mechanism.
 
 ### Done (code-level)
 
+- Fixed the backend's production build being unrunnable on any host: `node
+  dist/server.js` (plain Node, no TS-aware loader) couldn't resolve
+  `@nutrition-app/shared`, since its `package.json` pointed `main` at raw
+  `.ts` source — fine for `tsx`/Metro/`tsc`, which transform TypeScript
+  themselves, but Node can't execute `.ts` directly. Fixed by having
+  `packages/shared` build to (and `main`/`types` point at) its compiled
+  `dist/`, with explicit `.js` extensions added to its internal relative
+  imports (required for Node ESM resolution). A root `prepare` script
+  rebuilds it automatically on `npm install`. Verified against a real
+  Postgres instance that the exact production build+start sequence works,
+  and that `tsx` dev mode and the Metro web bundle are both unaffected.
+- `render.yaml` (Render Blueprint) for deploying the backend — see
+  "Still needed" below.
 - Real app icon/splash/adaptive-icon/notification-icon art in
   `apps/mobile/assets/` (was literal 1×1 placeholder PNGs)
 - App Tracking Transparency prompt + Google's UMP consent flow, run once at
@@ -165,12 +186,27 @@ different extraction mechanism.
 
 ### Still needed — things only you can do
 
-1. **Deploy the backend somewhere real.** Right now it only runs via
-   `docker compose up` on your machine — there's no production hosting,
-   and `EXPO_PUBLIC_API_URL` still points at `localhost:4000`. Fly.io,
-   Railway, or Render are the lowest-effort fits for a Fastify + Postgres
-   app this size. Once deployed: update `eas.json`'s `EXPO_PUBLIC_API_URL`
-   placeholders, and `legal.ts`'s contact email.
+1. **Deploy the backend.** `render.yaml` at the repo root is a Render
+   Blueprint — in the Render dashboard: New → Blueprint → pick this repo →
+   it provisions a free Postgres database and a web service from it
+   automatically. After `JWT_SECRET` is auto-generated and `DATABASE_URL`
+   is wired to the database, you still need to set
+   `ANTHROPIC_API_KEY` (required) and, once you have them,
+   `REVENUECAT_WEBHOOK_SECRET`/`USDA_FDC_API_KEY`/`EXPO_ACCESS_TOKEN`, in
+   the service's **Environment** tab (left blank for now, marked
+   `sync: false` in the blueprint so Render prompts for them rather than
+   silently deploying without them). Both services default to Render's
+   **free** plan — no cost, but the free web service spins down on idle
+   (cold start on the next request after ~15 min) and the free database
+   expires after a while; bump both to a paid plan in `render.yaml` once
+   this is live for real users. Verified locally end-to-end before writing
+   this: the exact `buildCommand`/`startCommand` Render will run (fresh
+   `npm install`, build, `prisma migrate deploy`, `node dist/server.js`)
+   against a clean Postgres database, including the full
+   register/login/delete-account flow.
+
+   Once deployed, update `eas.json`'s `EXPO_PUBLIC_API_URL` placeholders
+   and `legal.ts`'s contact email with the real values.
 2. **Apple Developer Program** ($99/yr) and **Google Play Developer
    account** ($25 one-time), if you don't have them already.
 3. **RevenueCat dashboard:** Lifetime/Yearly/Monthly products + a

@@ -1,5 +1,5 @@
-import { DIET_HINTS, MOTIVATION_MESSAGES, type MotivationCategory } from "../constants/motivation";
-import type { MotivationMode } from "../types";
+import { DIET_HINTS, MOTIVATION_MESSAGES, type MotivationCategory } from "../constants/motivation.js";
+import type { MotivationMode } from "../types.js";
 
 export function pickFrom<T>(list: T[] | undefined, fallback: T | null): T | null {
   if (!list || list.length === 0) return fallback;

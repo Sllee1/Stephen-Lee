@@ -1,4 +1,4 @@
-import { NUTRIENT_KEYS, type NutrientTotals } from "../types";
+import { NUTRIENT_KEYS, type NutrientTotals } from "../types.js";
 
 export function emptyNutrientTotals(): NutrientTotals {
   return Object.fromEntries(NUTRIENT_KEYS.map((k) => [k, 0])) as NutrientTotals;
