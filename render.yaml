@@ -12,7 +12,14 @@ services:
     region: oregon
     branch: claude/nutrition-app-production-rebuild-uxnk3s
     healthCheckPath: /health
-    buildCommand: npm install && npm run build:shared && npm run db:generate --workspace apps/backend && npm run build --workspace apps/backend
+    # --include=dev: NODE_ENV=production below (set because the server reads
+    # it at runtime, e.g. to disable pino-pretty) also applies to this build
+    # step on Render, and plain `npm install` under NODE_ENV=production skips
+    # devDependencies — including typescript/@types/* that `tsc` needs to
+    # build. Confirmed locally: without this flag the build fails on an
+    # inconsistent subset of devDependencies going missing (some get kept via
+    # workspace hoisting, others — e.g. @types/node-cron — don't).
+    buildCommand: npm install --include=dev && npm run build:shared && npm run db:generate --workspace apps/backend && npm run build --workspace apps/backend
     startCommand: npm run db:deploy --workspace apps/backend && npm run start --workspace apps/backend
     envVars:
       - key: NODE_VERSION
