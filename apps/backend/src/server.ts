@@ -18,6 +18,7 @@ import aiRoutes from "./routes/ai.js";
 import subscriptionRoutes from "./routes/subscriptions.js";
 import pushRoutes from "./routes/push.js";
 import foodRoutes from "./routes/foods.js";
+import legalRoutes from "./routes/legal.js";
 
 async function buildServer() {
   const app = Fastify({
@@ -56,6 +57,7 @@ async function buildServer() {
   await app.register(subscriptionRoutes);
   await app.register(pushRoutes);
   await app.register(foodRoutes);
+  await app.register(legalRoutes);
 
   return app;
 }

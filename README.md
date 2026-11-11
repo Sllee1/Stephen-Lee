@@ -111,49 +111,87 @@ a still at each timestamp, then reads each still as base64 via
 `expo-file-system`. Same contract into the backend (`/ai/analyze-technique-video`),
 different extraction mechanism.
 
-## Before shipping
+## Publishing checklist
 
-- Replace the placeholder assets in `apps/mobile/assets/` (real icon/splash)
-- Fill in the real RevenueCat SDK keys, entitlement identifier, and AdMob
-  App/ad-unit IDs (see "RevenueCat + AdMob" below) — they're currently
-  either unset or pointed at Google's test AdMob App ID
-- Move meal/build-photo thumbnails out of inline base64 (stored as text in
-  Postgres today) and into object storage (S3/R2/Cloudinary) once photo
-  volume matters
+### Done (code-level)
 
-Already handled:
+- Real app icon/splash/adaptive-icon/notification-icon art in
+  `apps/mobile/assets/` (was literal 1×1 placeholder PNGs)
+- App Tracking Transparency prompt + Google's UMP consent flow, run once at
+  startup before the first ad request (`apps/mobile/src/services/adsConsent.ts`,
+  called from `app/_layout.tsx`) — required by App Store review guideline
+  5.1.2 since AdMob's personalized ads use the IDFA; shipping without this
+  gets the app rejected, not just flagged later. `expo-tracking-transparency`
+  is registered as a plugin in `app.json` with its `NSUserTrackingUsageDescription`.
+- In-app account deletion (`DELETE /account` in `apps/backend/src/routes/auth.ts`,
+  surfaced as "Delete account" on the Profile screen) — required by App
+  Store review guideline 5.1.1(v) for any app with account creation; Prisma's
+  cascading foreign keys mean deleting the `User` row removes everything.
+  Doesn't cancel an active subscription — that's still Apple's/Google's to
+  manage (Profile → Manage subscription, via RevenueCat's Customer Center,
+  covers that).
+- Privacy Policy + Terms of Service, served directly by the backend at
+  `GET /privacy` / `GET /terms` (`apps/backend/src/routes/legal.ts`) so
+  there's a working URL the moment the backend is deployed — both stores
+  require one. **Update `CONTACT_EMAIL` and `PRODUCT_NAME` in `legal.ts`
+  before submitting** — they're placeholders.
+- `apps/mobile/eas.json` scaffolded (development/preview/production build
+  profiles) for EAS Build/Submit.
+- RevenueCat (`apps/mobile/src/services/subscriptions.ts`) wired
+  end-to-end: `configurePurchases(userId)` runs once per session
+  (`EntitlementContext`, keyed off the same `userId` the backend webhook
+  matches on), `presentPaywall()` shows RevenueCat's dashboard-configured
+  paywall (Lifetime/Yearly/Monthly packages — copy/pricing/layout all live
+  in the RevenueCat dashboard, no app update needed to change them), and
+  `presentCustomerCenter()` gives subscribed users self-serve manage/cancel/
+  restore, all surfaced from the Profile tab's "Premium" section. The
+  webhook at `apps/backend/src/routes/subscriptions.ts` stays the source of
+  truth for entitlement state (`GET /entitlement`) — the SDK calls are for
+  presenting purchase UI, not for gating ads/features client-side.
+- AdMob's native App ID wired via the `react-native-google-mobile-ads`
+  Expo config plugin (`apps/mobile/app.config.js`), separate from the ad
+  unit ID.
+- Both RevenueCat and AdMob (and `expo-tracking-transparency`) are
+  Expo-Go-safe — they `require()` lazily and no-op when running in Expo Go
+  or on web (`isExpoGo` check via `expo-constants`), so the rest of the app
+  stays testable via a plain QR scan; exercising purchases/ads/ATT for real
+  needs an EAS development build.
 - `/ai/*` routes are rate-limited per user (`@fastify/rate-limit`, 20
   requests/minute — see `apps/backend/src/routes/ai.ts`), since each call
-  is a paid Anthropic request unlike the rest of the API
+  is a paid Anthropic request unlike the rest of the API.
 - `apps/backend/src/services/notifications.ts`'s de-dupe is backed by the
   `SentNotification` table (unique on event+flag+date) instead of an
-  in-memory Set, so it's safe across multiple backend instances
+  in-memory Set, so it's safe across multiple backend instances.
 
-### RevenueCat + AdMob
+### Still needed — things only you can do
 
-RevenueCat (`apps/mobile/src/services/subscriptions.ts`) is wired
-end-to-end: `configurePurchases(userId)` runs once per session
-(`EntitlementContext`, keyed off the same `userId` the backend webhook
-matches on), `presentPaywall()` shows RevenueCat's dashboard-configured
-paywall (Lifetime/Yearly/Monthly packages — copy/pricing/layout all live in
-the RevenueCat dashboard, no app update needed to change them), and
-`presentCustomerCenter()` gives subscribed users self-serve manage/cancel/
-restore. Both are surfaced from the Profile tab's "Premium" section. The
-webhook at `apps/backend/src/routes/subscriptions.ts` is still the source
-of truth for entitlement state (`GET /entitlement`) — the SDK calls above
-are for presenting purchase UI, not for gating ads/features client-side.
-
-To actually go live:
-- Set `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` (public SDK keys,
-  safe client-side) and `EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID` (must match
-  the entitlement identifier in the RevenueCat dashboard) in
-  `apps/mobile/.env.local`
-- Configure the Lifetime/Yearly/Monthly products + a "Healthapp Pro"
-  entitlement + an offering/paywall in the RevenueCat dashboard, and the
-  matching in-app-purchase products in App Store Connect / Play Console
-- Point the RevenueCat webhook at `POST /webhooks/revenuecat` and set
-  `REVENUECAT_WEBHOOK_SECRET` in `apps/backend/.env`
-- Set `ADMOB_IOS_APP_ID` / `ADMOB_ANDROID_APP_ID` (native, build-time —
-  read by `apps/mobile/app.config.js`, not `EXPO_PUBLIC_*`) and
-  `EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID`; all three currently fall back to
-  Google's test IDs
+1. **Deploy the backend somewhere real.** Right now it only runs via
+   `docker compose up` on your machine — there's no production hosting,
+   and `EXPO_PUBLIC_API_URL` still points at `localhost:4000`. Fly.io,
+   Railway, or Render are the lowest-effort fits for a Fastify + Postgres
+   app this size. Once deployed: update `eas.json`'s `EXPO_PUBLIC_API_URL`
+   placeholders, and `legal.ts`'s contact email.
+2. **Apple Developer Program** ($99/yr) and **Google Play Developer
+   account** ($25 one-time), if you don't have them already.
+3. **RevenueCat dashboard:** Lifetime/Yearly/Monthly products + a
+   "Healthapp Pro" entitlement + an offering/paywall, mirrored as real
+   in-app-purchase products in App Store Connect / Play Console. Then set
+   `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` / `_ENTITLEMENT_ID` in
+   `apps/mobile/.env.local`, point the RevenueCat webhook at
+   `POST /webhooks/revenuecat`, and set `REVENUECAT_WEBHOOK_SECRET` on the
+   deployed backend.
+4. **AdMob account + app registration** → real App IDs and ad unit IDs, set
+   as `ADMOB_IOS_APP_ID` / `ADMOB_ANDROID_APP_ID` (native, build-time — read
+   by `app.config.js`, not `EXPO_PUBLIC_*`) and
+   `EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID`. All three currently fall back to
+   Google's test IDs.
+5. **`eas login` + `eas init`** (requires your own Expo account) to get a
+   real `extra.eas.projectId` written into `app.json` — can't be faked or
+   generated without an authenticated account.
+6. **Store listings:** screenshots (several device sizes each store wants),
+   description, keywords, content rating questionnaire, and each store's
+   data-safety / privacy-nutrition-label form (what you collect, mirroring
+   `/privacy`).
+7. Move meal/build-photo thumbnails out of inline base64 (stored as text in
+   Postgres today) and into object storage (S3/R2/Cloudinary) — not a
+   launch blocker, but worth doing once photo volume matters.

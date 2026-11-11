@@ -53,6 +53,12 @@
           "icon": "./assets/notification-icon.png",
           "color": "#B5502D"
         }
+      ],
+      [
+        "expo-tracking-transparency",
+        {
+          "userTrackingPermission": "Your data is used to show you more relevant ads. You can change this anytime in Settings."
+        }
       ]
     ],
     "extra": {

@@ -13,12 +13,13 @@ import { colors, colorForBmiCategory } from "../../src/theme";
 
 export default function ProfileScreen() {
   const { profile, loading, refetch } = useProfile();
-  const { logout } = useAuth();
+  const { logout, deleteAccount } = useAuth();
   const entitlement = useEntitlement();
   const [buildThumb, setBuildThumb] = useState<string | null>(null);
   const [buildResult, setBuildResult] = useState<{ build: string; bmiOffset: number; note: string } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (loading || !profile) {
     return (
@@ -84,6 +85,29 @@ export default function ProfileScreen() {
     } catch {
       Alert.alert("Something went wrong", "Couldn't open subscription management — try again.");
     }
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      "Delete your account?",
+      "This permanently deletes your profile, meal/workout history, and calendar — it can't be undone. This does not cancel an active subscription; manage that from Manage Subscription above first.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete account",
+          style: "destructive",
+          onPress: async () => {
+            setDeleting(true);
+            try {
+              await deleteAccount();
+            } catch {
+              Alert.alert("Something went wrong", "Couldn't delete your account — try again.");
+              setDeleting(false);
+            }
+          },
+        },
+      ]
+    );
   }
 
   return (
@@ -162,6 +186,10 @@ export default function ProfileScreen() {
 
       <Pressable onPress={logout} style={{ borderRadius: 10, padding: 14, alignItems: "center", borderWidth: 1, borderColor: colors.rust }}>
         <Text style={{ color: colors.rust, fontWeight: "700" }}>Log out</Text>
+      </Pressable>
+
+      <Pressable onPress={confirmDeleteAccount} disabled={deleting} style={{ padding: 10, alignItems: "center" }}>
+        {deleting ? <ActivityIndicator color={colors.muted} /> : <Text style={{ color: colors.muted, fontWeight: "600", textDecorationLine: "underline" }}>Delete account</Text>}
       </Pressable>
     </ScrollView>
   );

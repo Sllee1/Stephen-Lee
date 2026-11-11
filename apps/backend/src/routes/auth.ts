@@ -1,6 +1,7 @@
 import argon2 from "argon2";
 import { z } from "zod";
 import type { FastifyInstance } from "fastify";
+import { requireAuth } from "../middleware/requireAuth.js";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -37,5 +38,20 @@ export default async function authRoutes(app: FastifyInstance) {
 
     const token = app.jwt.sign({ sub: user.id }, { expiresIn: "30d" });
     return reply.send({ token, userId: user.id });
+  });
+
+  app.register(async (scoped) => {
+    scoped.addHook("onRequest", requireAuth);
+
+    // Required by App Store review guideline 5.1.1(v): any app that lets a
+    // user create an account must also let them delete it from inside the
+    // app, not just via a web form/support email. Every other table's
+    // foreign key cascades from User (see prisma/schema.prisma), so this
+    // one delete removes everything — meals, calendar, weight/workout
+    // history, push tokens, entitlement, the lot.
+    scoped.delete("/account", async (request, reply) => {
+      await scoped.prisma.user.delete({ where: { id: request.userId } });
+      return reply.code(204).send();
+    });
   });
 }
