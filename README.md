@@ -210,7 +210,7 @@ different extraction mechanism.
 2. **Apple Developer Program** ($99/yr) and **Google Play Developer
    account** ($25 one-time), if you don't have them already.
 3. **RevenueCat dashboard:** Lifetime/Yearly/Monthly products + a
-   "Healthapp Pro" entitlement + an offering/paywall, mirrored as real
+   "Healthapp" entitlement + an offering/paywall, mirrored as real
    in-app-purchase products in App Store Connect / Play Console. Then set
    `EXPO_PUBLIC_REVENUECAT_IOS_KEY` / `_ANDROID_KEY` / `_ENTITLEMENT_ID` in
    `apps/mobile/.env.local`, point the RevenueCat webhook at

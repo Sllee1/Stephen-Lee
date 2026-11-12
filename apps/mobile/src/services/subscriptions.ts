@@ -8,7 +8,7 @@ const IOS_KEY = process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? "";
 const ANDROID_KEY = process.env.EXPO_PUBLIC_REVENUECAT_ANDROID_KEY ?? "";
 
 /** Must match the entitlement identifier configured in the RevenueCat dashboard. */
-export const PRO_ENTITLEMENT_ID = process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? "Healthapp Pro";
+export const PRO_ENTITLEMENT_ID = process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? "Healthapp";
 
 // Mirrors @revenuecat/purchases-typescript-internal's PAYWALL_RESULT enum
 // verbatim (values only, not re-exported from the package) so this file

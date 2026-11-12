@@ -7,7 +7,7 @@ import type { CustomerInfo } from "react-native-purchases";
  * failing to resolve the native module. In-app purchases are a mobile-only
  * monetization path — there's no App Store/Play Store equivalent on web.
  */
-export const PRO_ENTITLEMENT_ID = process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? "Healthapp Pro";
+export const PRO_ENTITLEMENT_ID = process.env.EXPO_PUBLIC_REVENUECAT_ENTITLEMENT_ID ?? "Healthapp";
 
 export enum PAYWALL_RESULT {
   NOT_PRESENTED = "NOT_PRESENTED",
