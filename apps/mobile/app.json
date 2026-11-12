@@ -7,7 +7,9 @@
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
     "icon": "./assets/icon.png",
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.nutritiontracker.app",
@@ -23,7 +25,11 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FBF9F4"
       },
-      "permissions": ["CAMERA", "RECORD_AUDIO", "READ_EXTERNAL_STORAGE"]
+      "permissions": [
+        "CAMERA",
+        "RECORD_AUDIO",
+        "READ_EXTERNAL_STORAGE"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -62,7 +68,12 @@
       ]
     ],
     "extra": {
-      "apiUrl": "http://localhost:4000"
-    }
+      "apiUrl": "http://localhost:4000",
+      "router": {},
+      "eas": {
+        "projectId": "e77797ed-f1e1-461a-9113-4e5f22c7348b"
+      }
+    },
+    "owner": "sllee1"
   }
 }
