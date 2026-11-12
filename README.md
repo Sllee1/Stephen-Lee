@@ -1,4 +1,4 @@
-# Nutrition Tracker — production monorepo
+# OTAS Health & Fitness Planner — production monorepo
 
 Production rebuild of the `NutritionTracker.jsx` React artifact prototype as
 a React Native app with a real backend, ad-supported free tier, and a

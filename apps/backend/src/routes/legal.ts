@@ -10,7 +10,7 @@ import type { FastifyInstance } from "fastify";
  * collects or the services it talks to change.
  */
 
-const PRODUCT_NAME = "Nutrition Tracker";
+const PRODUCT_NAME = "OTAS Health & Fitness Planner";
 const CONTACT_EMAIL = "InfoSupport.OTAS@gmail.com";
 const EFFECTIVE_DATE = "November 12, 2026";
 
