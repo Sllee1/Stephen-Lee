@@ -1,7 +1,15 @@
 import React from "react";
+import { Platform } from "react-native";
 import Constants from "expo-constants";
 import type { BannerAd as BannerAdType, BannerAdSize as BannerAdSizeType, TestIds as TestIdsType } from "react-native-google-mobile-ads";
 import { useEntitlement } from "../context/EntitlementContext";
+
+// AdMob ad unit IDs are created per-platform (an iOS unit ID won't serve
+// correctly if used on Android, or vice versa) — this only worked
+// unnoticed during testing because Google's shared test banner ID happens
+// to be identical on both platforms.
+const IOS_BANNER_UNIT_ID = process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_IOS;
+const ANDROID_BANNER_UNIT_ID = process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_ANDROID;
 
 // react-native-google-mobile-ads is a native module outside Expo Go's
 // bundled SDK — requiring it crashes Expo Go at launch, so it's deferred
@@ -19,6 +27,6 @@ export function AdBanner() {
   if (!adsEnabled || isExpoGo) return null;
 
   const { BannerAd, BannerAdSize, TestIds } = loadAdsModule();
-  const unitId = process.env.EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID || TestIds.BANNER;
+  const unitId = (Platform.OS === "ios" ? IOS_BANNER_UNIT_ID : ANDROID_BANNER_UNIT_ID) || TestIds.BANNER;
   return <BannerAd unitId={unitId} size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER} />;
 }

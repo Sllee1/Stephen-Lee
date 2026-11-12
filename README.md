@@ -219,8 +219,9 @@ different extraction mechanism.
 4. **AdMob account + app registration** → real App IDs and ad unit IDs, set
    as `ADMOB_IOS_APP_ID` / `ADMOB_ANDROID_APP_ID` (native, build-time — read
    by `app.config.js`, not `EXPO_PUBLIC_*`) and
-   `EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID`. All three currently fall back to
-   Google's test IDs.
+   `EXPO_PUBLIC_ADMOB_BANNER_UNIT_ID_IOS` / `_ANDROID` (one per platform —
+   ad units are platform-specific in AdMob). All four currently fall back
+   to Google's test IDs.
 5. **`eas login` + `eas init`** (requires your own Expo account) to get a
    real `extra.eas.projectId` written into `app.json` — can't be faked or
    generated without an authenticated account.
