@@ -12,14 +12,14 @@
       "distribution": "internal",
       "channel": "preview",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-DEPLOYED-BACKEND-URL"
+        "EXPO_PUBLIC_API_URL": "https://nutrition-tracker-api-1q33.onrender.com"
       }
     },
     "production": {
       "autoIncrement": true,
       "channel": "production",
       "env": {
-        "EXPO_PUBLIC_API_URL": "https://REPLACE-WITH-YOUR-DEPLOYED-BACKEND-URL"
+        "EXPO_PUBLIC_API_URL": "https://nutrition-tracker-api-1q33.onrender.com"
       }
     }
   },
