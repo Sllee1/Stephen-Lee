@@ -6,15 +6,13 @@ import type { FastifyInstance } from "fastify";
  * Console listing and the in-app "Premium"/paywall screens the moment the
  * backend is deployed — no separate hosting to set up just for these two
  * pages. Content reflects what this app actually does (see README) as of
- * this writing; update it if the data it collects or the services it talks
- * to change. The contact email and product/company name are placeholders —
- * fill in `legal.ts`'s CONTACT_EMAIL/PRODUCT_NAME before submitting to
- * either store, since both require a working contact method.
+ * this writing; update it (and bump EFFECTIVE_DATE) if the data it
+ * collects or the services it talks to change.
  */
 
 const PRODUCT_NAME = "Nutrition Tracker";
-const CONTACT_EMAIL = "support@example.com"; // TODO: replace with a real support address before publishing
-const EFFECTIVE_DATE = "November 11, 2026";
+const CONTACT_EMAIL = "InfoSupport.OTAS@gmail.com";
+const EFFECTIVE_DATE = "November 12, 2026";
 
 function page(title: string, bodyHtml: string): string {
   return `<!doctype html>
