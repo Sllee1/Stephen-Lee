@@ -57,7 +57,6 @@ export function MealPlanBuilder({ profile, targets, onProfileSaved }: Props) {
 
   const lib = MEAL_LIBRARY[dietStyle];
   const scale = targets.calories / lib.baseCalories;
-  const hasRecipes = lib.breakfast.length > 0 || lib.lunch.length > 0 || lib.dinner.length > 0 || lib.snack.length > 0;
 
   const todayMeals = useMemo(() => buildDayMeals(dietStyle, todayDow(), scale), [dietStyle, scale]);
   const shoppingList = useMemo(() => buildShoppingList(dietStyle, shoppingDays, scale), [dietStyle, shoppingDays, scale]);
@@ -98,65 +97,57 @@ export function MealPlanBuilder({ profile, targets, onProfileSaved }: Props) {
         />
       ) : null}
 
-      {!hasRecipes ? (
-        <Text style={{ color: colors.muted }}>
-          No recipes ported for {STYLE_LABELS[dietStyle]} yet — see the TODO in packages/shared/src/constants/mealLibrary.ts. Balanced has a full day's rotation.
-        </Text>
-      ) : (
-        <View style={{ gap: 8 }}>
-          <Text style={{ fontWeight: "700", color: colors.ink }}>Today's plan ({targets.calories} cal target)</Text>
-          {(["breakfast", "lunch", "dinner", "snack"] as const).map((slot) => {
-            const option = todayMeals[slot];
-            if (!option) return null;
-            return (
-              <View key={slot} style={{ backgroundColor: colors.paper, borderRadius: 8, padding: 10 }}>
-                <Text style={{ color: colors.muted, fontSize: 12, textTransform: "uppercase" }}>{slot}</Text>
-                <Text style={{ fontWeight: "600", color: colors.ink }}>{option.name}</Text>
-                <Text style={{ color: colors.muted }}>
-                  {option.calories} cal · P{option.protein}g C{option.carbs}g F{option.fat}g
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-      )}
-
-      {hasRecipes ? (
-        <View style={{ gap: 10, marginTop: 4 }}>
-          <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-            <Text style={{ fontWeight: "700", color: colors.ink }}>Shopping list</Text>
-            <View style={{ flexDirection: "row", gap: 6 }}>
-              {SHOPPING_DAY_OPTIONS.map((n) => (
-                <Chip key={n} label={`${n}d`} active={n === shoppingDays} onPress={() => setShoppingDays(n)} small />
-              ))}
+      <View style={{ gap: 8 }}>
+        <Text style={{ fontWeight: "700", color: colors.ink }}>Today's plan ({targets.calories} cal target)</Text>
+        {(["breakfast", "lunch", "dinner", "snack"] as const).map((slot) => {
+          const option = todayMeals[slot];
+          if (!option) return null;
+          return (
+            <View key={slot} style={{ backgroundColor: colors.paper, borderRadius: 8, padding: 10 }}>
+              <Text style={{ color: colors.muted, fontSize: 12, textTransform: "uppercase" }}>{slot}</Text>
+              <Text style={{ fontWeight: "600", color: colors.ink }}>{option.name}</Text>
+              <Text style={{ color: colors.muted }}>
+                {option.calories} cal · P{option.protein}g C{option.carbs}g F{option.fat}g
+              </Text>
             </View>
-          </View>
+          );
+        })}
+      </View>
 
-          {groupedList.map((group) => (
-            <View key={group.category} style={{ gap: 4 }}>
-              <Text style={{ color: colors.rust, fontWeight: "700", fontSize: 12, textTransform: "uppercase" }}>{group.category}</Text>
-              {group.items.map((item) => (
-                <Text key={`${item.name}-${item.unit}`} style={{ color: colors.ink }}>
-                  {item.name} — {item.quantity} {item.unit}
-                </Text>
-              ))}
-            </View>
-          ))}
-
-          <View style={{ flexDirection: "row", gap: 8, marginTop: 6 }}>
-            <Pressable onPress={copyList} style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 10, alignItems: "center" }}>
-              <Text style={{ color: colors.ink, fontWeight: "600" }}>Copy list</Text>
-            </Pressable>
-            <Pressable
-              onPress={() => Linking.openURL("https://www.instacart.com")}
-              style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 10, alignItems: "center" }}
-            >
-              <Text style={{ color: colors.ink, fontWeight: "600" }}>Open Instacart</Text>
-            </Pressable>
+      <View style={{ gap: 10, marginTop: 4 }}>
+        <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
+          <Text style={{ fontWeight: "700", color: colors.ink }}>Shopping list</Text>
+          <View style={{ flexDirection: "row", gap: 6 }}>
+            {SHOPPING_DAY_OPTIONS.map((n) => (
+              <Chip key={n} label={`${n}d`} active={n === shoppingDays} onPress={() => setShoppingDays(n)} small />
+            ))}
           </View>
-          <Text style={{ color: colors.muted, fontSize: 12 }}>No live grocery integration — copy the list and paste it in.</Text>
         </View>
-      ) : null}
+
+        {groupedList.map((group) => (
+          <View key={group.category} style={{ gap: 4 }}>
+            <Text style={{ color: colors.rust, fontWeight: "700", fontSize: 12, textTransform: "uppercase" }}>{group.category}</Text>
+            {group.items.map((item) => (
+              <Text key={`${item.name}-${item.unit}`} style={{ color: colors.ink }}>
+                {item.name} — {item.quantity} {item.unit}
+              </Text>
+            ))}
+          </View>
+        ))}
+
+        <View style={{ flexDirection: "row", gap: 8, marginTop: 6 }}>
+          <Pressable onPress={copyList} style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 10, alignItems: "center" }}>
+            <Text style={{ color: colors.ink, fontWeight: "600" }}>Copy list</Text>
+          </Pressable>
+          <Pressable
+            onPress={() => Linking.openURL("https://www.instacart.com")}
+            style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 10, alignItems: "center" }}
+          >
+            <Text style={{ color: colors.ink, fontWeight: "600" }}>Open Instacart</Text>
+          </Pressable>
+        </View>
+        <Text style={{ color: colors.muted, fontSize: 12 }}>No live grocery integration — copy the list and paste it in.</Text>
+      </View>
     </View>
   );
 }
