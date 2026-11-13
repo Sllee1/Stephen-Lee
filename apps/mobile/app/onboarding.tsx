@@ -3,27 +3,25 @@ import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 
 import { useRouter } from "expo-router";
 import { ACTIVITY_LEVELS, GOALS, type Goal, type Sex, type UnitPref } from "@nutrition-app/shared";
 import { saveProfile } from "../src/api/profile";
+import { HeightWeightFields } from "../src/components/HeightWeightFields";
 import { colors } from "../src/theme";
 
 export default function OnboardingScreen() {
   const router = useRouter();
   const [sex, setSex] = useState<Sex>("female");
   const [age, setAge] = useState("");
-  const [heightCm, setHeightCm] = useState("");
-  const [weightKg, setWeightKg] = useState("");
+  const [unitPref, setUnitPref] = useState<UnitPref>("metric");
+  const [heightCm, setHeightCm] = useState<number | null>(null);
+  const [weightKg, setWeightKg] = useState<number | null>(null);
   const [activity, setActivity] = useState(ACTIVITY_LEVELS[1].id);
   const [goal, setGoal] = useState<Goal>("maintain");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const unitPref: UnitPref = "metric";
-
   async function finish() {
     setError(null);
     const parsedAge = Number(age);
-    const parsedHeight = Number(heightCm);
-    const parsedWeight = Number(weightKg);
-    if (!parsedAge || !parsedHeight || !parsedWeight) {
+    if (!parsedAge || !heightCm || !weightKg) {
       setError("Fill in age, height, and weight to continue.");
       return;
     }
@@ -33,8 +31,8 @@ export default function OnboardingScreen() {
       await saveProfile({
         sex,
         age: parsedAge,
-        heightCm: parsedHeight,
-        weightKg: parsedWeight,
+        heightCm,
+        weightKg,
         activity,
         goal,
         unitPref,
@@ -62,13 +60,16 @@ export default function OnboardingScreen() {
         <TextInput keyboardType="number-pad" value={age} onChangeText={setAge} style={inputStyle} placeholder="e.g. 30" />
       </Field>
 
-      <Field label="Height (cm)">
-        <TextInput keyboardType="decimal-pad" value={heightCm} onChangeText={setHeightCm} style={inputStyle} placeholder="e.g. 170" />
-      </Field>
-
-      <Field label="Weight (kg)">
-        <TextInput keyboardType="decimal-pad" value={weightKg} onChangeText={setWeightKg} style={inputStyle} placeholder="e.g. 68" />
-      </Field>
+      <HeightWeightFields
+        initialUnitPref={unitPref}
+        initialHeightCm={heightCm}
+        initialWeightKg={weightKg}
+        onChange={(v) => {
+          setUnitPref(v.unitPref);
+          setHeightCm(v.heightCm);
+          setWeightKg(v.weightKg);
+        }}
+      />
 
       <Field label="Activity level">
         <SegmentedRow options={ACTIVITY_LEVELS.map((a) => ({ id: a.id, label: a.label }))} value={activity} onChange={setActivity} />

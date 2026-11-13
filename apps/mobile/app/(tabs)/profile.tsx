@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { adjustedBmi, bmiCategory, BUILD_LABELS, computeBMI, MOTIVATION_MODES, type BmiPreference } from "@nutrition-app/shared";
+import { adjustedBmi, bmiCategory, BUILD_LABELS, cmToFtIn, computeBMI, kgToLb, MOTIVATION_MODES, type BmiPreference, type UnitPref } from "@nutrition-app/shared";
 import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { analyzeBuildPhoto } from "../../src/api/ai";
@@ -10,7 +10,16 @@ import { useEntitlement } from "../../src/context/EntitlementContext";
 import { registerForPushNotifications } from "../../src/services/notifications";
 import { PAYWALL_RESULT, presentCustomerCenter, presentPaywall } from "../../src/services/subscriptions";
 import { Card } from "../../src/components/Card";
+import { HeightWeightFields } from "../../src/components/HeightWeightFields";
 import { colors, colorForBmiCategory } from "../../src/theme";
+
+function formatHeightWeight(heightCm: number, weightKg: number, unitPref: UnitPref): string {
+  if (unitPref === "imperial") {
+    const { ft, inch } = cmToFtIn(heightCm);
+    return `${ft}'${inch}" · ${Math.round(kgToLb(weightKg))} lb`;
+  }
+  return `${Math.round(heightCm)} cm · ${Math.round(weightKg)} kg`;
+}
 
 export default function ProfileScreen() {
   const { profile, loading, refetch } = useProfile();
@@ -21,6 +30,11 @@ export default function ProfileScreen() {
   const [analyzing, setAnalyzing] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editingHW, setEditingHW] = useState(false);
+  const [savingHW, setSavingHW] = useState(false);
+  const [pendingUnitPref, setPendingUnitPref] = useState<UnitPref>("metric");
+  const [pendingHeightCm, setPendingHeightCm] = useState<number | null>(null);
+  const [pendingWeightKg, setPendingWeightKg] = useState<number | null>(null);
 
   if (loading || !profile) {
     return (
@@ -59,6 +73,27 @@ export default function ProfileScreen() {
 
   function setBmiPreference(pref: BmiPreference) {
     saveProfile({ bmiPreference: pref }).then(refetch);
+  }
+
+  function startEditingHW() {
+    setPendingUnitPref(profile!.unitPref);
+    setPendingHeightCm(profile!.heightCm);
+    setPendingWeightKg(profile!.weightKg);
+    setEditingHW(true);
+  }
+
+  async function saveHW() {
+    if (!pendingHeightCm || !pendingWeightKg) return;
+    setSavingHW(true);
+    try {
+      await saveProfile({ unitPref: pendingUnitPref, heightCm: pendingHeightCm, weightKg: pendingWeightKg });
+      await refetch();
+      setEditingHW(false);
+    } catch {
+      Alert.alert("Something went wrong", "Couldn't save — try again.");
+    } finally {
+      setSavingHW(false);
+    }
   }
 
   async function upgradeToPremium() {
@@ -114,6 +149,42 @@ export default function ProfileScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Profile</Text>
+
+      <Card title="Height & weight" icon="body-outline">
+        {editingHW ? (
+          <View style={{ gap: 12 }}>
+            <HeightWeightFields
+              initialUnitPref={pendingUnitPref}
+              initialHeightCm={pendingHeightCm}
+              initialWeightKg={pendingWeightKg}
+              onChange={(v) => {
+                setPendingUnitPref(v.unitPref);
+                setPendingHeightCm(v.heightCm);
+                setPendingWeightKg(v.weightKg);
+              }}
+            />
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <Pressable onPress={saveHW} disabled={savingHW} style={{ flex: 1, backgroundColor: colors.ink, borderRadius: 10, padding: 12, alignItems: "center" }}>
+                {savingHW ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Save</Text>}
+              </Pressable>
+              <Pressable
+                onPress={() => setEditingHW(false)}
+                disabled={savingHW}
+                style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}
+              >
+                <Text style={{ color: colors.ink, fontWeight: "600" }}>Cancel</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : (
+          <Pressable onPress={startEditingHW}>
+            <Text style={{ fontSize: 20, fontWeight: "700", color: colors.ink }}>
+              {formatHeightWeight(profile.heightCm, profile.weightKg, profile.unitPref)}
+            </Text>
+            <Text style={{ color: colors.muted, marginTop: 4 }}>Tap to edit</Text>
+          </Pressable>
+        )}
+      </Card>
 
       <Card title="BMI" icon="analytics-outline">
         <Text style={{ fontSize: 32, fontWeight: "800", color: colorForBmiCategory[category.colorToken] }}>{primaryBmi.toFixed(1)}</Text>
