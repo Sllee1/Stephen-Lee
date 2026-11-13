@@ -9,6 +9,7 @@ import { useAuth } from "../../src/context/AuthContext";
 import { useEntitlement } from "../../src/context/EntitlementContext";
 import { registerForPushNotifications } from "../../src/services/notifications";
 import { PAYWALL_RESULT, presentCustomerCenter, presentPaywall } from "../../src/services/subscriptions";
+import { Card } from "../../src/components/Card";
 import { colors, colorForBmiCategory } from "../../src/theme";
 
 export default function ProfileScreen() {
@@ -114,7 +115,7 @@ export default function ProfileScreen() {
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Profile</Text>
 
-      <Section title="BMI">
+      <Card title="BMI" icon="analytics-outline">
         <Text style={{ fontSize: 32, fontWeight: "800", color: colorForBmiCategory[category.colorToken] }}>{primaryBmi.toFixed(1)}</Text>
         <Text style={{ color: colors.ink }}>{category.label}</Text>
 
@@ -134,9 +135,9 @@ export default function ProfileScreen() {
         <Pressable onPress={captureBuildPhoto} disabled={analyzing} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 10 }}>
           {analyzing ? <ActivityIndicator color={colors.primary} /> : <Text style={{ color: colors.ink, fontWeight: "600" }}>Add a build photo for a more personal estimate</Text>}
         </Pressable>
-      </Section>
+      </Card>
 
-      <Section title="Motivation mode">
+      <Card title="Motivation mode" icon="flame-outline">
         <View style={{ gap: 8 }}>
           {MOTIVATION_MODES.map((m) => (
             <Pressable
@@ -155,15 +156,15 @@ export default function ProfileScreen() {
             </Pressable>
           ))}
         </View>
-      </Section>
+      </Card>
 
-      <Section title="Notifications">
+      <Card title="Notifications" icon="notifications-outline">
         <Pressable onPress={() => registerForPushNotifications()} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}>
           <Text style={{ color: colors.ink, fontWeight: "600" }}>Enable workout & eating-window reminders</Text>
         </Pressable>
-      </Section>
+      </Card>
 
-      <Section title="Premium">
+      <Card title="Premium" icon="star-outline">
         {entitlement.tier === "premium" ? (
           <>
             <Text style={{ color: colors.ink, fontWeight: "600" }}>Premium active — ads off</Text>
@@ -182,7 +183,7 @@ export default function ProfileScreen() {
             </Pressable>
           </>
         )}
-      </Section>
+      </Card>
 
       <Pressable onPress={logout} style={{ borderRadius: 10, padding: 14, alignItems: "center", borderWidth: 1, borderColor: colors.rust }}>
         <Text style={{ color: colors.rust, fontWeight: "700" }}>Log out</Text>
@@ -192,14 +193,5 @@ export default function ProfileScreen() {
         {deleting ? <ActivityIndicator color={colors.muted} /> : <Text style={{ color: colors.muted, fontWeight: "600", textDecorationLine: "underline" }}>Delete account</Text>}
       </Pressable>
     </ScrollView>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 16, gap: 10 }}>
-      <Text style={{ fontWeight: "800", fontSize: 16, color: colors.ink }}>{title}</Text>
-      {children}
-    </View>
   );
 }

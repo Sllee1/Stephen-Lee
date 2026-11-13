@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { Pressable, Switch, Text, TextInput, View } from "react-native";
 import { addMinutesToTime, type CalendarEventType } from "@nutrition-app/shared";
-import { colors } from "../theme";
+import { cardShadow, colors } from "../theme";
 
 export interface EventDraft {
   type: CalendarEventType;
@@ -73,7 +73,7 @@ export function AddCalendarEventForm({ onSubmit, onCancel }: Props) {
   }
 
   return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, gap: 12 }}>
+    <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 12, ...cardShadow }}>
       <View style={{ flexDirection: "row", gap: 8 }}>
         <TypeChip label="Workout" active={type === "workout"} onPress={() => setType("workout")} />
         <TypeChip label="Eating window" active={type === "eating"} onPress={() => setType("eating")} />

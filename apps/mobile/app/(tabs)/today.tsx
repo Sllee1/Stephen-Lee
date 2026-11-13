@@ -18,7 +18,8 @@ import { getDateEvents } from "../../src/api/calendar";
 import { getWorkoutHistory } from "../../src/api/weightAndWorkouts";
 import { AdBanner } from "../../src/components/AdBanner";
 import { NutritionFacts } from "../../src/components/NutritionFacts";
-import { colors } from "../../src/theme";
+import { Card } from "../../src/components/Card";
+import { cardShadow, colors } from "../../src/theme";
 
 export default function TodayScreen() {
   const router = useRouter();
@@ -90,21 +91,20 @@ export default function TodayScreen() {
             <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>{prettyDate()}</Text>
 
             {coachMessage ? (
-              <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14 }}>
+              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, ...cardShadow }}>
                 <Text style={{ color: colors.ink }}>{coachMessage}</Text>
               </View>
             ) : null}
 
             {todaysWorkout ? (
-              <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, gap: 4 }}>
+              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 4, ...cardShadow }}>
                 <Text style={{ fontWeight: "700", color: colors.green }}>Today's workout</Text>
                 <Text style={{ color: colors.ink }}>{todaysWorkout.label}</Text>
                 {prevResult ? <Text style={{ color: colors.muted }}>Last time: {prevResult}</Text> : null}
               </View>
             ) : null}
 
-            <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 16, gap: 8 }}>
-              <Text style={{ fontWeight: "800", fontSize: 18, color: colors.ink }}>Daily totals</Text>
+            <Card title="Daily totals" icon="stats-chart-outline">
               <Text style={{ color: overTarget ? colors.rust : colors.ink }}>
                 {Math.round(totalCalories)} / {targets.calories} cal {overTarget ? `(${Math.round(-remaining)} over)` : `(${Math.round(remaining)} left)`}
               </Text>
@@ -116,7 +116,7 @@ export default function TodayScreen() {
                 <Text style={{ color: colors.primary, fontWeight: "600" }}>{showFullFacts ? "Hide" : "Show"} full nutrition facts</Text>
               </Pressable>
               {showFullFacts ? <NutritionFacts totals={sumNutrients(meals)} /> : null}
-            </View>
+            </Card>
 
             <Pressable
               onPress={() => router.push("/(tabs)/log")}
@@ -129,7 +129,7 @@ export default function TodayScreen() {
           </View>
         }
         renderItem={({ item }) => (
-          <View style={{ marginHorizontal: 20, marginBottom: 12, backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 12, flexDirection: "row", gap: 12, alignItems: "center" }}>
+          <View style={{ marginHorizontal: 20, marginBottom: 12, backgroundColor: colors.card, borderRadius: 14, padding: 12, flexDirection: "row", gap: 12, alignItems: "center", ...cardShadow }}>
             {item.thumbUrl ? <Image source={{ uri: item.thumbUrl }} style={{ width: 48, height: 48, borderRadius: 8 }} /> : null}
             <View style={{ flex: 1 }}>
               <Text style={{ fontWeight: "700", color: colors.ink }}>{item.name}</Text>

@@ -4,7 +4,8 @@ import { emptyNutrientTotals, FOOD_DATABASE, NUTRIENT_KEYS, type FoodDatabaseEnt
 import { lookupFoodByName } from "../api/ai";
 import { searchUsdaFoods } from "../api/foods";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
-import { colors } from "../theme";
+import { Card } from "./Card";
+import { cardShadow, colors } from "../theme";
 
 type Mode = "quick" | "ai" | "manual";
 type PickableFood = FoodDatabaseEntry | UsdaFoodResult;
@@ -173,9 +174,7 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
       ) : null}
 
       {selected && preview ? (
-        <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 14, gap: 10 }}>
-          <Text style={{ fontWeight: "700", color: colors.ink }}>{selected.name}</Text>
-
+        <Card title={selected.name} icon="nutrition-outline">
           <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
             <Pressable onPress={() => setServings((s) => Math.max(0.5, s - 0.5))} style={stepperButtonStyle}>
               <Text style={{ color: colors.ink, fontWeight: "800" }}>−</Text>
@@ -193,7 +192,7 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
           <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 12, alignItems: "center" }}>
             <Text style={{ color: colors.paper, fontWeight: "700" }}>Add to meal</Text>
           </Pressable>
-        </View>
+        </Card>
       ) : null}
     </View>
   );
@@ -253,7 +252,7 @@ function AiLookup({ onAdd }: { onAdd: (item: MealItem) => void }) {
       </Pressable>
 
       {result ? (
-        <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 14, gap: 10 }}>
+        <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 10, ...cardShadow }}>
           {!result.found ? <Text style={{ color: colors.amber }}>Not confident this is a real food — double check before adding.</Text> : null}
           <Text style={{ color: colors.muted }}>Serving used: {result.serving}</Text>
 

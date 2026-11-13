@@ -17,3 +17,12 @@ export const colorForBmiCategory: Record<"amber" | "green" | "rust", string> = {
   green: colors.green,
   rust: colors.rust,
 };
+
+/** Shared soft elevation for card-like boxes, replacing the old flat 1px black border. */
+export const cardShadow = {
+  shadowColor: colors.ink,
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.08,
+  shadowRadius: 8,
+  elevation: 3,
+};

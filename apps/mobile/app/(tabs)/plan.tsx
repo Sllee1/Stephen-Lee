@@ -5,7 +5,7 @@ import { autoFillCalendar, clearCalendar, createDateEvent, deleteDateEvent, getD
 import { AddCalendarEventForm, type EventDraft } from "../../src/components/AddCalendarEventForm";
 import { WeekTemplateEditor } from "../../src/components/WeekTemplateEditor";
 import { AdBanner } from "../../src/components/AdBanner";
-import { colors } from "../../src/theme";
+import { cardShadow, colors } from "../../src/theme";
 
 type PlanView = "month" | "template";
 
@@ -167,7 +167,7 @@ function MonthCalendarView() {
             <Text style={{ color: colors.muted }}>Nothing scheduled.</Text>
           ) : (
             selectedEvents.map((e) => (
-              <View key={e.id} style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12 }}>
+              <View key={e.id} style={{ flexDirection: "row", justifyContent: "space-between", backgroundColor: colors.card, borderRadius: 14, padding: 12, ...cardShadow }}>
                 <Text style={{ color: colors.ink }}>{e.label} {e.startTime ? `(${e.startTime}${e.endTime ? `–${e.endTime}` : ""})` : ""}</Text>
                 <Pressable onPress={() => deleteDateEvent(e.id).then(load)}>
                   <Text style={{ color: colors.rust }}>Delete</Text>

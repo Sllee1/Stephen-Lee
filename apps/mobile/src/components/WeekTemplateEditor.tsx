@@ -3,7 +3,8 @@ import { ActivityIndicator, Alert, Pressable, Text, TextInput, View } from "reac
 import { addHoursToTime, EATING_PRESETS, formatTime, WEEK_DAYS, type TemplateEvent } from "@nutrition-app/shared";
 import { createTemplateEvent, deleteTemplateEvent, getTemplateEvents, replaceTemplateEventsOfType } from "../api/calendar";
 import { AddCalendarEventForm, type EventDraft } from "./AddCalendarEventForm";
-import { colors } from "../theme";
+import { Card } from "./Card";
+import { cardShadow, colors } from "../theme";
 
 /**
  * The recurring, day-of-week template (as opposed to the Month Calendar's
@@ -79,10 +80,9 @@ export function WeekTemplateEditor() {
                   justifyContent: "space-between",
                   alignItems: "center",
                   backgroundColor: colors.card,
-                  borderWidth: 1,
-                  borderColor: colors.line,
-                  borderRadius: 10,
+                  borderRadius: 14,
                   padding: 12,
+                  ...cardShadow,
                 }}
               >
                 <View>
@@ -145,8 +145,7 @@ function EatingPresetPicker({ onApplied }: { onApplied: () => void }) {
   }
 
   return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, gap: 10 }}>
-      <Text style={{ fontWeight: "700", color: colors.ink }}>Apply an eating window to every day</Text>
+    <Card title="Apply an eating window to every day" icon="time-outline">
       <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 6 }}>
         {EATING_PRESETS.map((p) => (
           <Pressable
@@ -180,7 +179,7 @@ function EatingPresetPicker({ onApplied }: { onApplied: () => void }) {
       <Pressable onPress={apply} disabled={applying} style={{ backgroundColor: colors.amber, borderRadius: 8, padding: 10, alignItems: "center" }}>
         {applying ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Apply to all 7 days</Text>}
       </Pressable>
-    </View>
+    </Card>
   );
 }
 
@@ -213,8 +212,7 @@ function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
   }
 
   return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, gap: 10 }}>
-      <Text style={{ fontWeight: "700", color: colors.ink }}>Apply the same workout to every day</Text>
+    <Card title="Apply the same workout to every day" icon="barbell-outline">
       <TextInput value={label} onChangeText={setLabel} style={inputStyle} placeholder="Workout label" />
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1, gap: 4 }}>
@@ -229,7 +227,7 @@ function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
       <Pressable onPress={apply} disabled={applying} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 10, alignItems: "center" }}>
         {applying ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Apply to all 7 days</Text>}
       </Pressable>
-    </View>
+    </Card>
   );
 }
 

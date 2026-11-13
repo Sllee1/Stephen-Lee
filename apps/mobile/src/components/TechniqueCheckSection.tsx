@@ -4,6 +4,7 @@ import * as ImagePicker from "expo-image-picker";
 import type { AnalyzeTechniqueVideoResponse } from "@nutrition-app/shared";
 import { analyzeTechniqueVideo } from "../api/ai";
 import { extractVideoFrames, type ExtractedFrame } from "../services/videoFrames";
+import { Card } from "./Card";
 import { colors } from "../theme";
 
 /**
@@ -116,8 +117,7 @@ export function TechniqueCheckSection() {
       ) : null}
 
       {result ? (
-        <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 14, gap: 10 }}>
-          <Text style={{ fontWeight: "800", color: colors.ink }}>{result.movement}</Text>
+        <Card title={result.movement} icon="checkmark-circle-outline">
           <Text style={{ color: colors.ink }}>{result.summary}</Text>
 
           {result.strengths.length > 0 ? (
@@ -146,7 +146,7 @@ export function TechniqueCheckSection() {
           ) : null}
 
           <Text style={{ color: colors.muted, fontSize: 12 }}>Confidence: {result.confidence}</Text>
-        </View>
+        </Card>
       ) : null}
 
       {!videoUri ? <Text style={{ color: colors.muted, fontSize: 12 }}>Not medical or injury-diagnosis advice — general form feedback only.</Text> : null}

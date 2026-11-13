@@ -7,6 +7,7 @@ import { AdBanner } from "../../src/components/AdBanner";
 import { MealPlanBuilder } from "../../src/components/MealPlanBuilder";
 import { WorkoutPlanBuilder } from "../../src/components/WorkoutPlanBuilder";
 import { TechniqueCheckSection } from "../../src/components/TechniqueCheckSection";
+import { Card } from "../../src/components/Card";
 import { colors } from "../../src/theme";
 
 export default function TrainerScreen() {
@@ -26,24 +27,24 @@ export default function TrainerScreen() {
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Personal trainer</Text>
 
-      <Section title="Goal">
+      <Card title="Goal" icon="flag-outline">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {GOALS.map((g) => (
             <Chip key={g.id} label={g.label} active={g.id === profile.goal} onPress={() => saveProfile({ goal: g.id as Goal }).then(refetch)} />
           ))}
         </View>
-      </Section>
+      </Card>
 
-      <Section title="Daily targets">
+      <Card title="Daily targets" icon="stats-chart-outline">
         <Text style={{ color: colors.ink }}>{targets.calories} cal — P{targets.protein}g · C{targets.carbs}g · F{targets.fat}g</Text>
         {targets.cappedNote ? (
           <Text style={{ color: colors.amber, marginTop: 4 }}>
             Your goal-driven target was below the safety floor, so it's capped at {targets.calories} cal.
           </Text>
         ) : null}
-      </Section>
+      </Card>
 
-      <Section title="Physique">
+      <Card title="Physique" icon="body-outline">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {PHYSIQUES.map((p) => (
             <Chip
@@ -54,31 +55,22 @@ export default function TrainerScreen() {
             />
           ))}
         </View>
-      </Section>
+      </Card>
 
-      <Section title="Meal plan">
+      <Card title="Meal plan" icon="restaurant-outline">
         <MealPlanBuilder profile={profile} targets={targets} onProfileSaved={refetch} />
-      </Section>
+      </Card>
 
-      <Section title="Workout plan">
+      <Card title="Workout plan" icon="barbell-outline">
         <WorkoutPlanBuilder profile={profile} />
-      </Section>
+      </Card>
 
-      <Section title="Technique check">
+      <Card title="Technique check" icon="videocam-outline">
         <TechniqueCheckSection />
-      </Section>
+      </Card>
 
       <AdBanner />
     </ScrollView>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 16, gap: 10 }}>
-      <Text style={{ fontWeight: "800", fontSize: 16, color: colors.ink }}>{title}</Text>
-      {children}
-    </View>
   );
 }
 

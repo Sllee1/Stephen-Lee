@@ -7,7 +7,7 @@ import { analyzeFoodPhoto } from "../../src/api/ai";
 import { createMeal } from "../../src/api/meals";
 import { FoodPicker } from "../../src/components/FoodPicker";
 import { NutritionFacts } from "../../src/components/NutritionFacts";
-import { colors } from "../../src/theme";
+import { cardShadow, colors } from "../../src/theme";
 
 /**
  * Photo -> analyze -> review -> save. The prototype resized client-side to
@@ -151,7 +151,7 @@ function DetectedItemCard({ item, onRemove }: { item: MealItem; onRemove: () => 
   const [expanded, setExpanded] = useState(false);
 
   return (
-    <View style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, gap: 8 }}>
+    <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 12, gap: 8, ...cardShadow }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View style={{ flex: 1 }}>
           <Text style={{ fontWeight: "600", color: colors.ink }}>{item.name}</Text>
