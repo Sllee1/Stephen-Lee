@@ -52,7 +52,7 @@ export default function OnboardingScreen() {
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 24, gap: 16 }}>
-      <Text style={{ fontSize: 26, fontWeight: "800", color: colors.ink }}>Let's set up your profile</Text>
+      <Text style={{ fontSize: 28, fontWeight: "800", color: colors.ink }}>Let's set up your profile</Text>
 
       <Field label="Sex">
         <SegmentedRow options={[{ id: "female", label: "Female" }, { id: "male", label: "Male" }]} value={sex} onChange={(v) => setSex(v as Sex)} />
@@ -80,7 +80,7 @@ export default function OnboardingScreen() {
 
       {error ? <Text style={{ color: colors.rust }}>{error}</Text> : null}
 
-      <Pressable onPress={finish} disabled={submitting} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 16, alignItems: "center", marginTop: 8 }}>
+      <Pressable onPress={finish} disabled={submitting} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 }}>
         {submitting ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Finish setup</Text>}
       </Pressable>
     </ScrollView>

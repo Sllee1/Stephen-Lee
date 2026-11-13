@@ -141,7 +141,7 @@ function MonthCalendarView() {
                 {cell.dayOfMonth ? (
                   <>
                     <Text style={{ color: isSelected ? colors.paper : colors.ink }}>{cell.dayOfMonth}</Text>
-                    <View style={{ flexDirection: "row", gap: 3, marginTop: 2 }}>
+                    <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
                       {hasWorkout ? <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.green }} /> : null}
                       {hasEating ? <View style={{ width: 5, height: 5, borderRadius: 3, backgroundColor: colors.amber }} /> : null}
                     </View>

@@ -150,7 +150,7 @@ function dvColor(pct: number): string {
 /** Nutrition-facts-label-style breakdown of all 29 tracked nutrients, not just the four headline macros — with %DV shown for every nutrient (0% if none consumed yet). */
 export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
   return (
-    <View style={{ gap: 3 }}>
+    <View style={{ gap: 4 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", borderBottomWidth: 2, borderBottomColor: colors.ink, paddingBottom: 4, marginBottom: 2 }}>
         <Text style={{ fontWeight: "800", color: colors.ink }}>Calories</Text>
         <Text style={{ fontWeight: "800", color: colors.ink }}>{Math.round(totals.calories)}</Text>
@@ -176,7 +176,7 @@ export function NutritionFacts({ totals }: { totals: NutrientTotals }) {
           </View>
         );
       })}
-      <Text style={{ color: colors.muted, fontSize: 11, marginTop: 4 }}>
+      <Text style={{ color: colors.muted, fontSize: 12, marginTop: 4 }}>
         % Daily Value based on a 2,000 calorie diet. Protein, total fat, fiber, and vitamins/minerals are colored — red at 0%, amber until you hit 100%, green at 100%+.
       </Text>
     </View>
