@@ -92,7 +92,7 @@ export function TechniqueCheckSection() {
 
       {extracting ? (
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-          <ActivityIndicator color={colors.rust} />
+          <ActivityIndicator color={colors.primary} />
           <Text style={{ color: colors.muted }}>Pulling frames from the clip…</Text>
         </View>
       ) : null}

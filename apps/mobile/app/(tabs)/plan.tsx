@@ -110,7 +110,7 @@ function MonthCalendarView() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.rust} />
+        <ActivityIndicator color={colors.primary} />
       ) : (
         <View style={{ flexDirection: "row", flexWrap: "wrap" }}>
           {cells.map((cell, i) => {

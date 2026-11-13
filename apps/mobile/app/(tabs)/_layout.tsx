@@ -16,7 +16,7 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.rust,
+        tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line },
         tabBarIcon: ({ color, size }) => <Ionicons name={ICONS[route.name] ?? "ellipse"} color={color} size={size} />,

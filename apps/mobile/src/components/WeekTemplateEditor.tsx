@@ -65,7 +65,7 @@ export function WeekTemplateEditor() {
       </View>
 
       {loading ? (
-        <ActivityIndicator color={colors.rust} />
+        <ActivityIndicator color={colors.primary} />
       ) : (
         <View style={{ gap: 8 }}>
           {dayEvents.length === 0 ? (

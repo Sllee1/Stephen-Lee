@@ -126,7 +126,7 @@ export function MealPlanBuilder({ profile, targets, onProfileSaved }: Props) {
 
         {groupedList.map((group) => (
           <View key={group.category} style={{ gap: 4 }}>
-            <Text style={{ color: colors.rust, fontWeight: "700", fontSize: 12, textTransform: "uppercase" }}>{group.category}</Text>
+            <Text style={{ color: colors.primary, fontWeight: "700", fontSize: 12, textTransform: "uppercase" }}>{group.category}</Text>
             {group.items.map((item) => (
               <Text key={`${item.name}-${item.unit}`} style={{ color: colors.ink }}>
                 {item.name} — {item.quantity} {item.unit}

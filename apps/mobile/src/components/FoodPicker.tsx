@@ -37,7 +37,7 @@ export function FoodPicker({ onAdd, onClose }: Props) {
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center", padding: 20, paddingBottom: 0 }}>
         <Text style={{ fontSize: 20, fontWeight: "800", color: colors.ink }}>Add a food</Text>
         <Pressable onPress={onClose}>
-          <Text style={{ color: colors.rust, fontWeight: "700" }}>Close</Text>
+          <Text style={{ color: colors.primary, fontWeight: "700" }}>Close</Text>
         </Pressable>
       </View>
 
@@ -146,7 +146,7 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
           <Text style={{ color: colors.muted, fontSize: 12, textTransform: "uppercase" }}>From USDA FoodData Central</Text>
           {usdaLoading ? (
             <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-              <ActivityIndicator color={colors.rust} size="small" />
+              <ActivityIndicator color={colors.primary} size="small" />
               <Text style={{ color: colors.muted }}>Searching…</Text>
             </View>
           ) : usdaError ? (

@@ -59,7 +59,7 @@ export default function TodayScreen() {
   if (profileLoading || !profile || loading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper }}>
-        <ActivityIndicator color={colors.rust} />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -113,14 +113,14 @@ export default function TodayScreen() {
               <MacroRow label="Fat" value={meals.reduce((s, m) => s + m.fat_g, 0)} target={targets.fat} color={colors.plum} />
 
               <Pressable onPress={() => setShowFullFacts((v) => !v)} style={{ marginTop: 4 }}>
-                <Text style={{ color: colors.rust, fontWeight: "600" }}>{showFullFacts ? "Hide" : "Show"} full nutrition facts</Text>
+                <Text style={{ color: colors.primary, fontWeight: "600" }}>{showFullFacts ? "Hide" : "Show"} full nutrition facts</Text>
               </Pressable>
               {showFullFacts ? <NutritionFacts totals={sumNutrients(meals)} /> : null}
             </View>
 
             <Pressable
               onPress={() => router.push("/(tabs)/log")}
-              style={{ backgroundColor: colors.rust, borderRadius: 10, padding: 14, alignItems: "center" }}
+              style={{ backgroundColor: colors.primary, borderRadius: 10, padding: 14, alignItems: "center" }}
             >
               <Text style={{ color: colors.paper, fontWeight: "700" }}>Log a meal</Text>
             </Pressable>

@@ -24,7 +24,7 @@ export default function ProfileScreen() {
   if (loading || !profile) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper }}>
-        <ActivityIndicator color={colors.rust} />
+        <ActivityIndicator color={colors.primary} />
       </View>
     );
   }
@@ -132,7 +132,7 @@ export default function ProfileScreen() {
         ) : null}
 
         <Pressable onPress={captureBuildPhoto} disabled={analyzing} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 10 }}>
-          {analyzing ? <ActivityIndicator color={colors.rust} /> : <Text style={{ color: colors.ink, fontWeight: "600" }}>Add a build photo for a more personal estimate</Text>}
+          {analyzing ? <ActivityIndicator color={colors.primary} /> : <Text style={{ color: colors.ink, fontWeight: "600" }}>Add a build photo for a more personal estimate</Text>}
         </Pressable>
       </Section>
 

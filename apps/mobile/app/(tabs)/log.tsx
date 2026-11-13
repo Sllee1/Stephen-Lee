@@ -108,7 +108,7 @@ export default function LogScreen() {
 
       {analyzing ? (
         <View style={{ flexDirection: "row", gap: 8, alignItems: "center" }}>
-          <ActivityIndicator color={colors.rust} />
+          <ActivityIndicator color={colors.primary} />
           <Text style={{ color: colors.muted }}>Analyzing photo…</Text>
         </View>
       ) : null}
@@ -165,7 +165,7 @@ function DetectedItemCard({ item, onRemove }: { item: MealItem; onRemove: () => 
       </View>
 
       <Pressable onPress={() => setExpanded((v) => !v)}>
-        <Text style={{ color: colors.rust, fontWeight: "600", fontSize: 13 }}>{expanded ? "Hide" : "Show"} nutrition facts</Text>
+        <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 13 }}>{expanded ? "Hide" : "Show"} nutrition facts</Text>
       </Pressable>
       {expanded ? <NutritionFacts totals={item} /> : null}
     </View>
