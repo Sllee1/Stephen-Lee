@@ -23,7 +23,7 @@
       "package": "com.nutritiontracker.app",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#FBF9F4"
+        "backgroundColor": "#024436"
       },
       "permissions": [
         "CAMERA",
@@ -42,7 +42,7 @@
         "expo-splash-screen",
         {
           "image": "./assets/splash.png",
-          "backgroundColor": "#FBF9F4"
+          "backgroundColor": "#024436"
         }
       ],
       [
