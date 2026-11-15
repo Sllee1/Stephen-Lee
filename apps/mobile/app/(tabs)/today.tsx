@@ -63,6 +63,16 @@ export default function TodayScreen() {
     }, [profile, loadDay])
   );
 
+  // useProfile() only fetches once per mount, and this tab stays mounted
+  // in the background while other tabs are open — so without this, a
+  // change made on Profile (e.g. switching Motivation mode) never reaches
+  // this screen's already-cached `profile` until it happens to remount.
+  useFocusEffect(
+    useCallback(() => {
+      refetchProfile();
+    }, [refetchProfile])
+  );
+
   if (profileError) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper, padding: 24, gap: 12 }}>
@@ -97,16 +107,17 @@ export default function TodayScreen() {
   const totalCalories = meals.reduce((sum, m) => sum + m.calories, 0);
   const remaining = targets.calories - totalCalories;
   const overTarget = remaining < 0;
-  const todaysWorkout = todayEvents.find((e) => e.type === "workout") ?? null;
-  const prevResult = todaysWorkout ? getPreviousResult(workoutHistory, todaysWorkout.label) : null;
+  const todaysWorkouts = todayEvents.filter((e) => e.type === "workout").sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""));
+  const todaysEating = todayEvents.filter((e) => e.type === "eating").sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? ""));
+  const firstPrevResult = todaysWorkouts[0] ? getPreviousResult(workoutHistory, todaysWorkouts[0].label) : null;
 
   const coachMessage = coachBubbleMessage(profile.motivationMode, {
     mealsLogged: meals.length,
     remaining,
     overTarget,
     dietStyle: profile.dietStyle,
-    hasWorkoutToday: Boolean(todaysWorkout),
-    prevResult,
+    hasWorkoutToday: todaysWorkouts.length > 0,
+    prevResult: firstPrevResult,
   });
 
   return (
@@ -117,6 +128,7 @@ export default function TodayScreen() {
         ListHeaderComponent={
           <View style={{ padding: 20, gap: 16 }}>
             <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>{prettyDate()}</Text>
+            <Text style={{ color: colors.ink }}>{greeting()}</Text>
 
             {coachMessage ? (
               <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, ...cardShadow }}>
@@ -124,17 +136,32 @@ export default function TodayScreen() {
               </View>
             ) : null}
 
-            {todaysWorkout ? (
-              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 4, ...cardShadow }}>
-                <Text style={{ fontWeight: "700", color: colors.green }}>Today's workout</Text>
-                <Text style={{ color: colors.ink }}>{todaysWorkout.label}</Text>
-                {todaysWorkout.startTime ? (
-                  <Text style={{ color: colors.muted }}>
-                    {formatTime(todaysWorkout.startTime)}
-                    {todaysWorkout.endTime ? ` – ${formatTime(todaysWorkout.endTime)}` : ""}
-                  </Text>
-                ) : null}
-                {prevResult ? <Text style={{ color: colors.muted }}>Last time: {prevResult}</Text> : null}
+            {todaysWorkouts.length > 0 || todaysEating.length > 0 ? (
+              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 10, ...cardShadow }}>
+                <Text style={{ fontWeight: "700", color: colors.ink }}>Today's schedule</Text>
+                {todaysWorkouts.map((w, i) => (
+                  <View key={w.id} style={{ gap: 2 }}>
+                    <Text style={{ fontWeight: "600", color: colors.green }}>{w.label}</Text>
+                    {w.startTime ? (
+                      <Text style={{ color: colors.muted }}>
+                        {formatTime(w.startTime)}
+                        {w.endTime ? ` – ${formatTime(w.endTime)}` : ""}
+                      </Text>
+                    ) : null}
+                    {i === 0 && firstPrevResult ? <Text style={{ color: colors.muted }}>Last time: {firstPrevResult}</Text> : null}
+                  </View>
+                ))}
+                {todaysEating.map((e) => (
+                  <View key={e.id} style={{ gap: 2 }}>
+                    <Text style={{ fontWeight: "600", color: colors.amber }}>{e.label}</Text>
+                    {e.startTime ? (
+                      <Text style={{ color: colors.muted }}>
+                        {formatTime(e.startTime)}
+                        {e.endTime ? ` – ${formatTime(e.endTime)}` : ""}
+                      </Text>
+                    ) : null}
+                  </View>
+                ))}
               </View>
             ) : null}
 
@@ -181,6 +208,14 @@ export default function TodayScreen() {
       />
     </View>
   );
+}
+
+/** A baseline welcome, independent of Motivation mode — "none" mode (the default) suppresses coachMessage entirely, which otherwise left this area blank. */
+function greeting(): string {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning! Here's your day.";
+  if (hour < 18) return "Good afternoon! Here's your day.";
+  return "Good evening! Here's your day.";
 }
 
 function MacroRow({ label, value, target, color }: { label: string; value: number; target: number; color: string }) {
