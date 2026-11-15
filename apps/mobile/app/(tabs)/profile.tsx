@@ -259,7 +259,7 @@ export default function ProfileScreen() {
           </>
         ) : (
           <>
-            <Text style={{ color: colors.muted }}>Remove ads and unlock premium-only features.</Text>
+            <Text style={{ color: colors.muted }}>Remove ads.</Text>
             <Pressable onPress={upgradeToPremium} disabled={purchasing} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 4 }}>
               {purchasing ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Upgrade to Premium</Text>}
             </Pressable>
