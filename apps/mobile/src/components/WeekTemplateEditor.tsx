@@ -183,44 +183,85 @@ function EatingPresetPicker({ onApplied }: { onApplied: () => void }) {
   );
 }
 
-/** Stamps the same workout onto all 7 template days — for a varied per-day split, use the Trainer tab's plan builder instead. */
+/**
+ * Adds one workout to whichever days are checked — a faster way to
+ * pre-build a varied weekly split (e.g. push/pull/legs on specific days)
+ * than repeating the full "+ Add event" form per day. This used to be a
+ * single "apply to every day" button backed by a type-scoped full
+ * replace, which meant running it a second time (e.g. for a different
+ * day's workout) silently wiped out every other day's workout, including
+ * ones added individually — each day is now a plain, additive create, so
+ * entries never overwrite each other and a day can hold more than one.
+ */
 function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
   const [label, setLabel] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [durationMin, setDurationMin] = useState("60");
+  const [selectedDays, setSelectedDays] = useState<boolean[]>(Array(7).fill(true));
   const [applying, setApplying] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  function toggleDay(i: number) {
+    setSelectedDays((prev) => prev.map((v, idx) => (idx === i ? !v : v)));
+  }
 
   async function apply() {
     if (!label.trim()) {
       setError("Give it a label (e.g. Leg day) so it shows as more than just \"Workout\".");
       return;
     }
+    const days = selectedDays.reduce<number[]>((acc, checked, i) => (checked ? [...acc, i] : acc), []);
+    if (days.length === 0) {
+      setError("Pick at least one day.");
+      return;
+    }
     setError(null);
     const minutes = Number(durationMin) || 60;
     setApplying(true);
     try {
-      const events = Array.from({ length: 7 }, (_, day) => ({
-        day,
-        type: "workout" as const,
-        label: label.trim(),
-        startTime,
-        endTime: addHoursToTime(startTime, minutes / 60),
-        notifyStart: true,
-        notifyEnd: false,
-      }));
-      await replaceTemplateEventsOfType("workout", events);
+      await Promise.all(
+        days.map((day) =>
+          createTemplateEvent({
+            day,
+            type: "workout",
+            label: label.trim(),
+            startTime,
+            endTime: addHoursToTime(startTime, minutes / 60),
+            notifyStart: true,
+            notifyEnd: false,
+          })
+        )
+      );
       onApplied();
-      Alert.alert("Applied", "Every day now has this workout.");
+      Alert.alert("Added", `Added to ${days.length === 7 ? "every day" : days.map((d) => WEEK_DAYS[d]).join(", ")}.`);
     } finally {
       setApplying(false);
     }
   }
 
   return (
-    <Card title="Apply the same workout to every day" icon="barbell-outline">
+    <Card title="Add a workout to multiple days" icon="barbell-outline">
       <TextInput value={label} onChangeText={setLabel} style={inputStyle} placeholder="e.g. Leg day" />
       {error ? <Text style={{ color: colors.rust, fontSize: 13 }}>{error}</Text> : null}
+      <View style={{ flexDirection: "row", gap: 6 }}>
+        {WEEK_DAYS.map((d, i) => (
+          <Pressable
+            key={d}
+            onPress={() => toggleDay(i)}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              alignItems: "center",
+              borderRadius: 8,
+              backgroundColor: selectedDays[i] ? colors.green : colors.paper,
+              borderWidth: 1,
+              borderColor: colors.line,
+            }}
+          >
+            <Text style={{ color: selectedDays[i] ? colors.paper : colors.ink, fontWeight: "600" }}>{d[0]}</Text>
+          </Pressable>
+        ))}
+      </View>
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={{ color: colors.muted, fontSize: 12 }}>Start (HH:MM)</Text>
@@ -232,7 +273,7 @@ function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
         </View>
       </View>
       <Pressable onPress={apply} disabled={applying} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 10, alignItems: "center" }}>
-        {applying ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Apply to all 7 days</Text>}
+        {applying ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Add to selected days</Text>}
       </Pressable>
     </Card>
   );
