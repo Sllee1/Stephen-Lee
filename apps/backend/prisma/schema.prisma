@@ -26,6 +26,7 @@ model User {
   bodyAnalysis   BodyAnalysis?
   entitlement    Entitlement?
   pushTokens     PushToken[]
+  passwordResets PasswordReset[]
 }
 
 model Profile {
@@ -281,4 +282,21 @@ model SentNotification {
 
   @@unique([eventId, flag, date])
   @@index([date])
+}
+
+/// A "forgot password" code requested for a user. At most one live row per
+/// user — requesting a new code (or using one) deletes any prior row for
+/// that user. `attempts` is what actually stops brute-forcing the 6-digit
+/// code, not network-level rate limiting alone: the code's invalidated
+/// after too many wrong guesses regardless of how requests are spread out.
+model PasswordReset {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  codeHash  String // sha256 of the 6-digit code — short-lived/low-value, so a fast hash is fine here (unlike the account password itself)
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
 }

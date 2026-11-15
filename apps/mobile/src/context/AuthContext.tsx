@@ -10,6 +10,8 @@ interface AuthContextValue {
   userId: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
+  requestPasswordReset: (email: string) => Promise<void>;
+  resetPassword: (email: string, code: string, newPassword: string) => Promise<void>;
   logout: () => Promise<void>;
   deleteAccount: () => Promise<void>;
 }
@@ -49,6 +51,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       },
       register: async (email, password) => {
         const result = await authApi.register(email, password);
+        setIsAuthenticated(true);
+        setUserIdState(result.userId);
+      },
+      requestPasswordReset: authApi.requestPasswordReset,
+      resetPassword: async (email, code, newPassword) => {
+        const result = await authApi.resetPassword(email, code, newPassword);
         setIsAuthenticated(true);
         setUserIdState(result.userId);
       },

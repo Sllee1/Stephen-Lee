@@ -46,6 +46,10 @@ export default function LoginScreen() {
         <PasswordField placeholder="Your password" value={password} onChangeText={setPassword} />
       </View>
 
+      <Link href="/(auth)/forgot-password" style={{ color: colors.muted, textAlign: "right" }}>
+        Forgot password?
+      </Link>
+
       {error ? <Text style={{ color: colors.rust }}>{error}</Text> : null}
 
       <Pressable onPress={handleSubmit} disabled={loading} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 14, alignItems: "center", marginTop: 8 }}>

@@ -19,6 +19,20 @@ export async function login(email: string, password: string): Promise<AuthRespon
   return result;
 }
 
+export async function requestPasswordReset(email: string): Promise<void> {
+  await api<{ ok: true }>("/auth/forgot-password", { method: "POST", body: JSON.stringify({ email }) });
+}
+
+export async function resetPassword(email: string, code: string, newPassword: string): Promise<AuthResponse> {
+  const result = await api<AuthResponse>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ email, code, newPassword }),
+  });
+  await setToken(result.token);
+  await setUserId(result.userId);
+  return result;
+}
+
 export async function logout(): Promise<void> {
   await setToken(null);
   await setUserId(null);
