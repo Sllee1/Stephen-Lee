@@ -44,6 +44,7 @@ model Profile {
   motivationMode   String   @default("none")
   dietStyle        String   @default("balanced")
   bmiPreference    String   @default("standard")
+  timezone         String   @default("UTC") // IANA zone (e.g. "America/New_York") — see services/notifications.ts for why this matters
   updatedAt        DateTime @updatedAt
 }
 

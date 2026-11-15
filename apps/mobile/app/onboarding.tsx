@@ -39,6 +39,7 @@ export default function OnboardingScreen() {
         motivationMode: "none",
         dietStyle: "balanced",
         bmiPreference: "standard",
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       router.replace("/(tabs)/today");
     } catch (err) {

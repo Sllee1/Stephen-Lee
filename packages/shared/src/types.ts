@@ -33,6 +33,8 @@ export interface Profile {
   motivationMode: MotivationMode;
   dietStyle: DietStyle;
   bmiPreference: BmiPreference;
+  /** IANA zone (e.g. "America/New_York") — lets the backend's reminder cron match a scheduled HH:MM against the user's own local time, not the server's. */
+  timezone: string;
 }
 
 /** The 29 nutrient fields tracked on every food item / meal / daily total. */

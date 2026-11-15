@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import type { Profile } from "@nutrition-app/shared";
-import { getProfile } from "../api/profile";
+import { getProfile, saveProfile } from "../api/profile";
 import { ApiError } from "../api/client";
 
 export function useProfile() {
@@ -16,6 +16,17 @@ export function useProfile() {
       const result = await getProfile();
       setProfile(result);
       setNeedsOnboarding(false);
+
+      // The backend's reminder cron matches a scheduled HH:MM against this
+      // timezone, not the server's own — self-heal it here (covers profiles
+      // created before this field existed, defaulted to "UTC", and users
+      // who've since traveled) rather than only setting it once at onboarding.
+      const deviceTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (deviceTz && result.timezone !== deviceTz) {
+        saveProfile({ timezone: deviceTz }).catch(() => {
+          /* non-fatal — reminders just keep using the previous value */
+        });
+      }
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) {
         setNeedsOnboarding(true);

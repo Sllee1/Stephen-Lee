@@ -16,6 +16,7 @@ const profileSchema = z.object({
   motivationMode: z.enum(["none", "moderate", "extreme"]).optional(),
   dietStyle: z.string().optional(),
   bmiPreference: z.enum(["standard", "adjusted"]).optional(),
+  timezone: z.string().optional(),
 });
 
 export default async function profileRoutes(app: FastifyInstance) {
