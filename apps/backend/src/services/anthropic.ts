@@ -111,12 +111,18 @@ Base values on standard reference nutrition data for that food. Set "found" to f
 }
 
 export async function analyzeTechniqueVideo(req: AnalyzeTechniqueVideoRequest): Promise<AnalyzeTechniqueVideoResponse> {
-  const instructions = `You are a movement-technique coach. You'll see a chronological sequence of frames extracted from a short exercise video${req.movementLabel ? ` (labeled by the user as: "${req.movementLabel}")` : ""}. Give brief, actionable form feedback.
+  const instructions = `You are a movement-technique coach. You'll see a chronological sequence of frames extracted from a short exercise video. Give brief, actionable form feedback.
+
+${
+  req.movementLabel
+    ? `The user identified this movement as "${req.movementLabel}" — trust that label and use it verbatim as the "movement" field, even if individual still frames (motion blur, an awkward angle, a partial rep) look ambiguous or suggest something else. Spend your analysis on form/technique for THIS specific movement — don't second-guess or override what it is.`
+    : `No movement label was given — identify the movement from the frames and report your best identification as "movement".`
+}
 
 Respond with ONLY valid JSON (no markdown fences, no commentary) matching exactly this shape:
 {"movement":string,"summary":string,"strengths":[string],"improvements":[string],"safetyNotes":[string],"confidence":"low"|"medium"|"high"}
 
-Keep each list short (max 4 items) and specific to what's visible across the frames. Use "safetyNotes" only for genuine injury-risk concerns (e.g. knee valgus, rounded lower back under load) — leave it empty if nothing stands out. Set confidence to "low" if the frames don't clearly show the movement.`;
+Keep each list short (max 4 items) and specific to what's visible across the frames. Use "safetyNotes" only for genuine injury-risk concerns (e.g. knee valgus, rounded lower back under load) — leave it empty if nothing stands out. Set confidence to "low" if the frames don't clearly show the movement well enough to give specific feedback (not merely because the movement name came from the user's label).`;
 
   const content: unknown[] = [{ type: "text", text: instructions }];
   req.frames.forEach((frame, i) => {
