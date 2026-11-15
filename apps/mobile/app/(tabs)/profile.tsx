@@ -35,6 +35,7 @@ export default function ProfileScreen() {
   const [pendingUnitPref, setPendingUnitPref] = useState<UnitPref>("metric");
   const [pendingHeightCm, setPendingHeightCm] = useState<number | null>(null);
   const [pendingWeightKg, setPendingWeightKg] = useState<number | null>(null);
+  const [registeringPush, setRegisteringPush] = useState(false);
 
   if (error) {
     return (
@@ -84,6 +85,22 @@ export default function ProfileScreen() {
 
   function setBmiPreference(pref: BmiPreference) {
     saveProfile({ bmiPreference: pref }).then(refetch);
+  }
+
+  async function enableNotifications() {
+    setRegisteringPush(true);
+    try {
+      const result = await registerForPushNotifications();
+      if (result.ok) {
+        Alert.alert("Reminders enabled", "You'll get a notification at the start/end of any workout or eating window that has reminders turned on in Plan.");
+      } else if (result.reason === "permission_denied") {
+        Alert.alert("Permission needed", "Enable notifications for this app in Settings to get workout/eating-window reminders.");
+      } else {
+        Alert.alert("Couldn't enable reminders", result.detail ?? "Something went wrong — try again.");
+      }
+    } finally {
+      setRegisteringPush(false);
+    }
   }
 
   function startEditingHW() {
@@ -241,9 +258,20 @@ export default function ProfileScreen() {
       </Card>
 
       <Card title="Notifications" icon="notifications-outline">
-        <Pressable onPress={() => registerForPushNotifications()} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}>
-          <Text style={{ color: colors.ink, fontWeight: "600" }}>Enable workout & eating-window reminders</Text>
+        <Pressable
+          onPress={enableNotifications}
+          disabled={registeringPush}
+          style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center" }}
+        >
+          {registeringPush ? (
+            <ActivityIndicator color={colors.primary} />
+          ) : (
+            <Text style={{ color: colors.ink, fontWeight: "600" }}>Enable workout & eating-window reminders</Text>
+          )}
         </Pressable>
+        <Text style={{ color: colors.muted, fontSize: 12, marginTop: 6 }}>
+          Only fires for workouts/eating windows with reminders turned on in Plan, and only once they're on the actual calendar (not just the week template).
+        </Text>
       </Card>
 
       <Card title="Premium" icon="star-outline">

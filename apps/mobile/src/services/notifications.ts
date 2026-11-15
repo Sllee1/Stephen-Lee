@@ -19,16 +19,28 @@ Notifications.setNotificationHandler({
   }),
 });
 
-export async function registerForPushNotifications(): Promise<boolean> {
-  const { status: existing } = await Notifications.getPermissionsAsync();
-  let status = existing;
-  if (existing !== "granted") {
-    const requested = await Notifications.requestPermissionsAsync();
-    status = requested.status;
-  }
-  if (status !== "granted") return false;
+export type PushRegistrationResult =
+  | { ok: true }
+  | { ok: false; reason: "permission_denied" | "error"; detail?: string };
 
-  const { data: token } = await Notifications.getExpoPushTokenAsync();
-  await registerPushToken(token, Platform.OS === "ios" ? "ios" : "android");
-  return true;
+// The caller (Profile's "Enable reminders" button) used to fire this and
+// forget — with no try/catch here, a thrown error (a bad push token fetch,
+// a failed /push/register call) surfaced nowhere, so tapping the button
+// looked identical whether it had worked or silently failed.
+export async function registerForPushNotifications(): Promise<PushRegistrationResult> {
+  try {
+    const { status: existing } = await Notifications.getPermissionsAsync();
+    let status = existing;
+    if (existing !== "granted") {
+      const requested = await Notifications.requestPermissionsAsync();
+      status = requested.status;
+    }
+    if (status !== "granted") return { ok: false, reason: "permission_denied" };
+
+    const { data: token } = await Notifications.getExpoPushTokenAsync();
+    await registerPushToken(token, Platform.OS === "ios" ? "ios" : "android");
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, reason: "error", detail: err instanceof Error ? err.message : String(err) };
+  }
 }
