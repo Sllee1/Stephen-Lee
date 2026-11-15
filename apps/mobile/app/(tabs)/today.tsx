@@ -216,8 +216,8 @@ export default function TodayScreen() {
           </View>
         )}
         ListEmptyComponent={<Text style={{ marginHorizontal: 20, color: colors.muted }}>No meals logged yet today.</Text>}
-        ListFooterComponent={<AdBanner />}
       />
+      <AdBanner />
     </View>
   );
 }

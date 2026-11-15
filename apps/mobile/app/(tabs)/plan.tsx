@@ -14,20 +14,21 @@ export default function PlanScreen() {
   const [resetKey, setResetKey] = useState(0);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 16 }}>
-      <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Plan</Text>
+    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 16 }}>
+        <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Plan</Text>
 
-      <View style={{ flexDirection: "row", gap: 6 }}>
-        <ViewChip label="Month calendar" active={view === "month"} onPress={() => setView("month")} />
-        <ViewChip label="Week template" active={view === "template"} onPress={() => setView("template")} />
-      </View>
+        <View style={{ flexDirection: "row", gap: 6 }}>
+          <ViewChip label="Month calendar" active={view === "month"} onPress={() => setView("month")} />
+          <ViewChip label="Week template" active={view === "template"} onPress={() => setView("template")} />
+        </View>
 
-      {view === "month" ? <MonthCalendarView key={resetKey} /> : <WeekTemplateEditor key={resetKey} />}
+        {view === "month" ? <MonthCalendarView key={resetKey} /> : <WeekTemplateEditor key={resetKey} />}
 
-      <ClearCalendarButton onCleared={() => setResetKey((k) => k + 1)} />
-
+        <ClearCalendarButton onCleared={() => setResetKey((k) => k + 1)} />
+      </ScrollView>
       <AdBanner />
-    </ScrollView>
+    </View>
   );
 }
 

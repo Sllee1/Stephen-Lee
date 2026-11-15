@@ -62,85 +62,86 @@ export default function TrainerScreen() {
   const targets = computeTargets(profile);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
-      <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Personal trainer</Text>
+    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 20 }}>
+        <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Personal trainer</Text>
 
-      <Card title="Today's plan" icon="today-outline">
-        {todaysWorkouts.length === 0 && todaysEating.length === 0 ? (
-          <Text style={{ color: colors.muted }}>Nothing scheduled today — add workouts and eating windows from the Plan tab.</Text>
-        ) : (
-          <View style={{ gap: 8 }}>
-            {todaysWorkouts.map((w) => (
-              <View key={w.id} style={{ gap: 2 }}>
-                <Text style={{ fontWeight: "600", color: colors.green }}>{w.label}</Text>
-                {w.startTime ? (
-                  <Text style={{ color: colors.muted }}>
-                    {formatTime(w.startTime)}
-                    {w.endTime ? ` – ${formatTime(w.endTime)}` : ""}
-                  </Text>
-                ) : null}
-              </View>
-            ))}
-            {todaysEating.map((e) => (
-              <View key={e.id} style={{ gap: 2 }}>
-                <Text style={{ fontWeight: "600", color: colors.amber }}>{e.label}</Text>
-                {e.startTime ? (
-                  <Text style={{ color: colors.muted }}>
-                    {formatTime(e.startTime)}
-                    {e.endTime ? ` – ${formatTime(e.endTime)}` : ""}
-                  </Text>
-                ) : null}
-              </View>
+        <Card title="Today's plan" icon="today-outline">
+          {todaysWorkouts.length === 0 && todaysEating.length === 0 ? (
+            <Text style={{ color: colors.muted }}>Nothing scheduled today — add workouts and eating windows from the Plan tab.</Text>
+          ) : (
+            <View style={{ gap: 8 }}>
+              {todaysWorkouts.map((w) => (
+                <View key={w.id} style={{ gap: 2 }}>
+                  <Text style={{ fontWeight: "600", color: colors.green }}>{w.label}</Text>
+                  {w.startTime ? (
+                    <Text style={{ color: colors.muted }}>
+                      {formatTime(w.startTime)}
+                      {w.endTime ? ` – ${formatTime(w.endTime)}` : ""}
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+              {todaysEating.map((e) => (
+                <View key={e.id} style={{ gap: 2 }}>
+                  <Text style={{ fontWeight: "600", color: colors.amber }}>{e.label}</Text>
+                  {e.startTime ? (
+                    <Text style={{ color: colors.muted }}>
+                      {formatTime(e.startTime)}
+                      {e.endTime ? ` – ${formatTime(e.endTime)}` : ""}
+                    </Text>
+                  ) : null}
+                </View>
+              ))}
+            </View>
+          )}
+          <Text style={{ color: colors.ink, marginTop: 10 }}>💡 {tip}</Text>
+        </Card>
+
+        <Card title="Goal" icon="flag-outline">
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {GOALS.map((g) => (
+              <Chip key={g.id} label={g.label} active={g.id === profile.goal} onPress={() => saveProfile({ goal: g.id as Goal }).then(refetch)} />
             ))}
           </View>
-        )}
-        <Text style={{ color: colors.ink, marginTop: 10 }}>💡 {tip}</Text>
-      </Card>
+        </Card>
 
-      <Card title="Goal" icon="flag-outline">
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {GOALS.map((g) => (
-            <Chip key={g.id} label={g.label} active={g.id === profile.goal} onPress={() => saveProfile({ goal: g.id as Goal }).then(refetch)} />
-          ))}
-        </View>
-      </Card>
+        <Card title="Daily targets" icon="stats-chart-outline">
+          <Text style={{ color: colors.ink }}>{targets.calories} cal — P{targets.protein}g · C{targets.carbs}g · F{targets.fat}g</Text>
+          {targets.cappedNote ? (
+            <Text style={{ color: colors.amber, marginTop: 4 }}>
+              Your goal-driven target was below the safety floor, so it's capped at {targets.calories} cal.
+            </Text>
+          ) : null}
+        </Card>
 
-      <Card title="Daily targets" icon="stats-chart-outline">
-        <Text style={{ color: colors.ink }}>{targets.calories} cal — P{targets.protein}g · C{targets.carbs}g · F{targets.fat}g</Text>
-        {targets.cappedNote ? (
-          <Text style={{ color: colors.amber, marginTop: 4 }}>
-            Your goal-driven target was below the safety floor, so it's capped at {targets.calories} cal.
-          </Text>
-        ) : null}
-      </Card>
+        <Card title="Technique check" icon="videocam-outline">
+          <TechniqueCheckSection />
+        </Card>
 
-      <Card title="Technique check" icon="videocam-outline">
-        <TechniqueCheckSection />
-      </Card>
+        <Card title="Physique" icon="body-outline">
+          <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
+            {PHYSIQUES.map((p) => (
+              <Chip
+                key={p.id}
+                label={p.label}
+                active={p.id === profile.physique}
+                onPress={() => saveProfile({ physique: p.id }).then(refetch)}
+              />
+            ))}
+          </View>
+        </Card>
 
-      <Card title="Physique" icon="body-outline">
-        <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
-          {PHYSIQUES.map((p) => (
-            <Chip
-              key={p.id}
-              label={p.label}
-              active={p.id === profile.physique}
-              onPress={() => saveProfile({ physique: p.id }).then(refetch)}
-            />
-          ))}
-        </View>
-      </Card>
+        <Card title="Meal plan" icon="restaurant-outline">
+          <MealPlanBuilder profile={profile} targets={targets} onProfileSaved={refetch} />
+        </Card>
 
-      <Card title="Meal plan" icon="restaurant-outline">
-        <MealPlanBuilder profile={profile} targets={targets} onProfileSaved={refetch} />
-      </Card>
-
-      <Card title="Workout plan" icon="barbell-outline">
-        <WorkoutPlanBuilder profile={profile} />
-      </Card>
-
+        <Card title="Workout plan" icon="barbell-outline">
+          <WorkoutPlanBuilder profile={profile} />
+        </Card>
+      </ScrollView>
       <AdBanner />
-    </ScrollView>
+    </View>
   );
 }
 
