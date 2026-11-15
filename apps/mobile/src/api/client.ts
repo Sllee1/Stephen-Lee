@@ -59,16 +59,37 @@ export class ApiError extends Error {
   }
 }
 
+// Render's free tier spins the backend down after inactivity, and a cold
+// start (or a flaky mobile connection) can leave a plain fetch() hanging
+// with no timeout of its own — that froze every screen gating on this
+// (useProfile etc.) on an indefinite loading spinner. 20s comfortably
+// covers a cold start; past that, fail clearly instead of hanging forever.
+const REQUEST_TIMEOUT_MS = 20000;
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
-  const response = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      ...(options.body ? { "Content-Type": "application/json" } : {}),
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...options.headers,
-    },
-  });
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(`${API_URL}${path}`, {
+      ...options,
+      signal: controller.signal,
+      headers: {
+        ...(options.body ? { "Content-Type": "application/json" } : {}),
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...options.headers,
+      },
+    });
+  } catch (err) {
+    if (err instanceof Error && err.name === "AbortError") {
+      throw new ApiError(0, "Request timed out — check your connection and try again.");
+    }
+    throw new ApiError(0, "Network error — check your connection and try again.");
+  } finally {
+    clearTimeout(timer);
+  }
 
   if (!response.ok) {
     const body = await response.json().catch(() => ({ error: response.statusText }));

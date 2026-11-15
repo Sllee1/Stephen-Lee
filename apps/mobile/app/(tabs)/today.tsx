@@ -13,6 +13,7 @@ import {
   type WorkoutResult,
 } from "@nutrition-app/shared";
 import { useProfile } from "../../src/hooks/useProfile";
+import { ApiError } from "../../src/api/client";
 import { getMeals, deleteMeal } from "../../src/api/meals";
 import { getDateEvents } from "../../src/api/calendar";
 import { getWorkoutHistory } from "../../src/api/weightAndWorkouts";
@@ -23,16 +24,18 @@ import { cardShadow, colors } from "../../src/theme";
 
 export default function TodayScreen() {
   const router = useRouter();
-  const { profile, loading: profileLoading, needsOnboarding } = useProfile();
+  const { profile, loading: profileLoading, needsOnboarding, error: profileError, refetch: refetchProfile } = useProfile();
   const [meals, setMeals] = useState<Meal[]>([]);
   const [todayEvents, setTodayEvents] = useState<DateEvent[]>([]);
   const [workoutHistory, setWorkoutHistory] = useState<WorkoutResult[]>([]);
   const [loading, setLoading] = useState(true);
+  const [dayError, setDayError] = useState<string | null>(null);
   const [showFullFacts, setShowFullFacts] = useState(false);
 
   const loadDay = useCallback(async () => {
     const date = todayKey();
     setLoading(true);
+    setDayError(null);
     try {
       const [mealsResult, eventsResult, historyResult] = await Promise.all([
         getMeals(date),
@@ -42,6 +45,8 @@ export default function TodayScreen() {
       setMeals(mealsResult);
       setTodayEvents(eventsResult);
       setWorkoutHistory(historyResult);
+    } catch (err) {
+      setDayError(err instanceof ApiError ? err.message : "Couldn't load today's data — try again.");
     } finally {
       setLoading(false);
     }
@@ -57,10 +62,32 @@ export default function TodayScreen() {
     }, [profile, loadDay])
   );
 
+  if (profileError) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper, padding: 24, gap: 12 }}>
+        <Text style={{ color: colors.ink, textAlign: "center" }}>{profileError}</Text>
+        <Pressable onPress={refetchProfile} style={{ backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 20 }}>
+          <Text style={{ color: colors.paper, fontWeight: "700" }}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
+
   if (profileLoading || !profile || loading) {
     return (
       <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper }}>
         <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+
+  if (dayError) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper, padding: 24, gap: 12 }}>
+        <Text style={{ color: colors.ink, textAlign: "center" }}>{dayError}</Text>
+        <Pressable onPress={loadDay} style={{ backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 20 }}>
+          <Text style={{ color: colors.paper, fontWeight: "700" }}>Retry</Text>
+        </Pressable>
       </View>
     );
   }

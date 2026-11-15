@@ -22,7 +22,7 @@ function formatHeightWeight(heightCm: number, weightKg: number, unitPref: UnitPr
 }
 
 export default function ProfileScreen() {
-  const { profile, loading, refetch } = useProfile();
+  const { profile, loading, error, refetch } = useProfile();
   const { logout, deleteAccount } = useAuth();
   const entitlement = useEntitlement();
   const [buildThumb, setBuildThumb] = useState<string | null>(null);
@@ -35,6 +35,17 @@ export default function ProfileScreen() {
   const [pendingUnitPref, setPendingUnitPref] = useState<UnitPref>("metric");
   const [pendingHeightCm, setPendingHeightCm] = useState<number | null>(null);
   const [pendingWeightKg, setPendingWeightKg] = useState<number | null>(null);
+
+  if (error) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center", backgroundColor: colors.paper, padding: 24, gap: 12 }}>
+        <Text style={{ color: colors.ink, textAlign: "center" }}>{error}</Text>
+        <Pressable onPress={refetch} style={{ backgroundColor: colors.ink, borderRadius: 10, paddingVertical: 10, paddingHorizontal: 20 }}>
+          <Text style={{ color: colors.paper, fontWeight: "700" }}>Retry</Text>
+        </Pressable>
+      </View>
+    );
+  }
 
   if (loading || !profile) {
     return (
