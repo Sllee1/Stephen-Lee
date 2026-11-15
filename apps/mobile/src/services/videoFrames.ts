@@ -1,5 +1,11 @@
 import * as VideoThumbnails from "expo-video-thumbnails";
-import * as FileSystem from "expo-file-system";
+// expo-file-system's default export (SDK 54+) dropped the old promise-based
+// API (readAsStringAsync, EncodingType, ...) in favor of a new File/Directory
+// class API — the old functions now live under /legacy. Importing from the
+// plain package here meant readAsStringAsync was silently undefined, so
+// every single frame read threw (caught per-timestamp below) and every
+// video failed with "couldn't read any frames", regardless of format.
+import * as FileSystem from "expo-file-system/legacy";
 
 export interface ExtractedFrame {
   time: number; // seconds

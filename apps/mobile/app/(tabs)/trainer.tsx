@@ -114,6 +114,10 @@ export default function TrainerScreen() {
         ) : null}
       </Card>
 
+      <Card title="Technique check" icon="videocam-outline">
+        <TechniqueCheckSection />
+      </Card>
+
       <Card title="Physique" icon="body-outline">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
           {PHYSIQUES.map((p) => (
@@ -133,10 +137,6 @@ export default function TrainerScreen() {
 
       <Card title="Workout plan" icon="barbell-outline">
         <WorkoutPlanBuilder profile={profile} />
-      </Card>
-
-      <Card title="Technique check" icon="videocam-outline">
-        <TechniqueCheckSection />
       </Card>
 
       <AdBanner />
