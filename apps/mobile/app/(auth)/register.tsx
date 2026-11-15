@@ -28,15 +28,22 @@ export default function RegisterScreen() {
     <View style={{ flex: 1, backgroundColor: colors.paper, padding: 24, justifyContent: "center", gap: 12 }}>
       <Text style={{ fontSize: 28, fontWeight: "800", color: colors.ink, marginBottom: 8 }}>Create your account</Text>
 
-      <TextInput
-        placeholder="Email"
-        autoCapitalize="none"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-        style={inputStyle}
-      />
-      <TextInput placeholder="Password (min 8 characters)" secureTextEntry value={password} onChangeText={setPassword} style={inputStyle} />
+      <View style={{ gap: 6 }}>
+        <Text style={{ fontWeight: "700", color: colors.ink }}>Email</Text>
+        <TextInput
+          placeholder="you@example.com"
+          autoCapitalize="none"
+          keyboardType="email-address"
+          value={email}
+          onChangeText={setEmail}
+          style={inputStyle}
+        />
+      </View>
+
+      <View style={{ gap: 6 }}>
+        <Text style={{ fontWeight: "700", color: colors.ink }}>Password</Text>
+        <TextInput placeholder="Min 8 characters" secureTextEntry value={password} onChangeText={setPassword} style={inputStyle} />
+      </View>
 
       {error ? <Text style={{ color: colors.rust }}>{error}</Text> : null}
 
