@@ -4,6 +4,7 @@ export * from "./ai.js";
 export * from "./constants/activity.js";
 export * from "./constants/physiques.js";
 export * from "./constants/motivation.js";
+export * from "./constants/tips.js";
 export * from "./constants/eatingPresets.js";
 export * from "./constants/mealLibrary.js";
 export * from "./constants/foodDatabase.js";

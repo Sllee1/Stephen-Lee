@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, FlatList, Image, Pressable, Text, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
 import {
   coachBubbleMessage,
   computeTargets,
@@ -117,6 +118,8 @@ export default function TodayScreen() {
     overTarget,
     dietStyle: profile.dietStyle,
     hasWorkoutToday: todaysWorkouts.length > 0,
+    hasEatingToday: todaysEating.length > 0,
+    workoutLabel: todaysWorkouts[0]?.label,
     prevResult: firstPrevResult,
   });
 
@@ -131,8 +134,17 @@ export default function TodayScreen() {
             <Text style={{ color: colors.ink }}>{greeting()}</Text>
 
             {coachMessage ? (
-              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, ...cardShadow }}>
+              <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 8, ...cardShadow }}>
+                <View style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
+                  <Ionicons name="barbell" size={14} color={colors.primary} />
+                  <Text style={{ color: colors.primary, fontWeight: "800", fontSize: 12, textTransform: "uppercase", letterSpacing: 0.5 }}>
+                    From the OTAS Trainer
+                  </Text>
+                </View>
                 <Text style={{ color: colors.ink }}>{coachMessage}</Text>
+                <Pressable onPress={() => router.push("/(tabs)/trainer")}>
+                  <Text style={{ color: colors.primary, fontWeight: "700" }}>Today's Game Plan →</Text>
+                </Pressable>
               </View>
             ) : null}
 

@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from "react-native";
-import { GOALS, PHYSIQUES, computeTargets, type Goal } from "@nutrition-app/shared";
+import { useFocusEffect } from "expo-router";
+import { formatTime, GOALS, PHYSIQUES, computeTargets, pickTip, todayKey, type DateEvent, type Goal } from "@nutrition-app/shared";
 import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
+import { getDateEvents } from "../../src/api/calendar";
 import { AdBanner } from "../../src/components/AdBanner";
 import { MealPlanBuilder } from "../../src/components/MealPlanBuilder";
 import { WorkoutPlanBuilder } from "../../src/components/WorkoutPlanBuilder";
@@ -12,6 +14,31 @@ import { colors } from "../../src/theme";
 
 export default function TrainerScreen() {
   const { profile, loading, error, refetch } = useProfile();
+  const [todayEvents, setTodayEvents] = useState<DateEvent[]>([]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const date = todayKey();
+      getDateEvents(date, date)
+        .then(setTodayEvents)
+        .catch(() => {
+          /* non-fatal — the rest of the Trainer tab doesn't depend on this */
+        });
+    }, [])
+  );
+
+  const todaysWorkouts = useMemo(
+    () => todayEvents.filter((e) => e.type === "workout").sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? "")),
+    [todayEvents]
+  );
+  const todaysEating = useMemo(
+    () => todayEvents.filter((e) => e.type === "eating").sort((a, b) => (a.startTime ?? "").localeCompare(b.startTime ?? "")),
+    [todayEvents]
+  );
+  // Tied to todayEvents (only changes when the fetch above completes), not
+  // every render, so the tip doesn't change mid-interaction — just each
+  // time the tab is actually revisited/reloaded.
+  const tip = useMemo(() => pickTip(todaysWorkouts.length > 0, todaysEating.length > 0), [todaysWorkouts, todaysEating]);
 
   if (error) {
     return (
@@ -37,6 +64,38 @@ export default function TrainerScreen() {
   return (
     <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Personal trainer</Text>
+
+      <Card title="Today's plan" icon="today-outline">
+        {todaysWorkouts.length === 0 && todaysEating.length === 0 ? (
+          <Text style={{ color: colors.muted }}>Nothing scheduled today — add workouts and eating windows from the Plan tab.</Text>
+        ) : (
+          <View style={{ gap: 8 }}>
+            {todaysWorkouts.map((w) => (
+              <View key={w.id} style={{ gap: 2 }}>
+                <Text style={{ fontWeight: "600", color: colors.green }}>{w.label}</Text>
+                {w.startTime ? (
+                  <Text style={{ color: colors.muted }}>
+                    {formatTime(w.startTime)}
+                    {w.endTime ? ` – ${formatTime(w.endTime)}` : ""}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+            {todaysEating.map((e) => (
+              <View key={e.id} style={{ gap: 2 }}>
+                <Text style={{ fontWeight: "600", color: colors.amber }}>{e.label}</Text>
+                {e.startTime ? (
+                  <Text style={{ color: colors.muted }}>
+                    {formatTime(e.startTime)}
+                    {e.endTime ? ` – ${formatTime(e.endTime)}` : ""}
+                  </Text>
+                ) : null}
+              </View>
+            ))}
+          </View>
+        )}
+        <Text style={{ color: colors.ink, marginTop: 10 }}>💡 {tip}</Text>
+      </Card>
 
       <Card title="Goal" icon="flag-outline">
         <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}>
