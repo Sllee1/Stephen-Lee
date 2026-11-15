@@ -129,6 +129,12 @@ export function WorkoutPlanBuilder({ profile }: Props) {
             <Chip key={s} label={s === "none" ? "None" : s[0].toUpperCase() + s.slice(1)} active={s === sport} onPress={() => setSport(s)} />
           ))}
         </View>
+        <TextInput
+          value={sport === "none" ? "" : sport}
+          onChangeText={(v) => setSport(v.trim() ? v : "none")}
+          placeholder="Not listed? Type your own (e.g. rowing, boxing)"
+          style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 10, color: colors.ink }}
+        />
       </View>
 
       <View style={{ gap: 8 }}>
