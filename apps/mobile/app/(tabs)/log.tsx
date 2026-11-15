@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { ActivityIndicator, Alert, Image, Modal, Pressable, ScrollView, Text, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
+import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { emptyNutrientTotals, todayKey, type MealItem } from "@nutrition-app/shared";
 import { analyzeFoodPhoto } from "../../src/api/ai";
@@ -97,13 +98,10 @@ export default function LogScreen() {
 
       {imageUri ? <Image source={{ uri: imageUri }} style={{ width: "100%", height: 200, borderRadius: 12 }} /> : null}
 
-      <View style={{ flexDirection: "row", gap: 10 }}>
-        <Pressable onPress={() => pickAndAnalyze(true)} style={{ flex: 1, backgroundColor: colors.ink, borderRadius: 10, padding: 14, alignItems: "center" }}>
-          <Text style={{ color: colors.paper, fontWeight: "700" }}>Take photo</Text>
-        </Pressable>
-        <Pressable onPress={() => pickAndAnalyze(false)} style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 14, alignItems: "center" }}>
-          <Text style={{ color: colors.ink, fontWeight: "700" }}>Choose from library</Text>
-        </Pressable>
+      <View style={{ gap: 14 }}>
+        <BigOptionButton icon="camera-outline" label="Take photo" onPress={() => pickAndAnalyze(true)} primary />
+        <BigOptionButton icon="library-outline" label="Choose from library" onPress={() => pickAndAnalyze(false)} />
+        <BigOptionButton icon="pencil-outline" label="Add a food without a photo" onPress={() => setShowPicker(true)} />
       </View>
 
       {analyzing ? (
@@ -130,10 +128,6 @@ export default function LogScreen() {
         </View>
       ) : null}
 
-      <Pressable onPress={() => setShowPicker(true)} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 14, alignItems: "center" }}>
-        <Text style={{ color: colors.ink, fontWeight: "700" }}>+ Add a food without a photo</Text>
-      </Pressable>
-
       <Modal visible={showPicker} animationType="slide" onRequestClose={() => setShowPicker(false)}>
         <FoodPicker
           onAdd={(item) => {
@@ -144,6 +138,38 @@ export default function LogScreen() {
         />
       </Modal>
     </ScrollView>
+  );
+}
+
+function BigOptionButton({
+  icon,
+  label,
+  onPress,
+  primary,
+}: {
+  icon: keyof typeof Ionicons.glyphMap;
+  label: string;
+  onPress: () => void;
+  primary?: boolean;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={{
+        flexDirection: "row",
+        alignItems: "center",
+        gap: 16,
+        backgroundColor: primary ? colors.ink : colors.card,
+        borderWidth: primary ? 0 : 1,
+        borderColor: colors.line,
+        borderRadius: 14,
+        padding: 20,
+        ...cardShadow,
+      }}
+    >
+      <Ionicons name={icon} size={32} color={primary ? colors.paper : colors.primary} />
+      <Text style={{ color: primary ? colors.paper : colors.ink, fontWeight: "700", fontSize: 16, flex: 1 }}>{label}</Text>
+    </Pressable>
   );
 }
 
