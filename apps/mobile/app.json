@@ -21,6 +21,7 @@
     },
     "android": {
       "package": "com.nutritiontracker.app",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#024436"
