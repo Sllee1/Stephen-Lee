@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-nativ
 import { Link } from "expo-router";
 import { useAuth } from "../../src/context/AuthContext";
 import { ApiError } from "../../src/api/client";
+import { PasswordField } from "../../src/components/PasswordField";
 import { colors } from "../../src/theme";
 
 export default function RegisterScreen() {
@@ -42,7 +43,7 @@ export default function RegisterScreen() {
 
       <View style={{ gap: 6 }}>
         <Text style={{ fontWeight: "700", color: colors.ink }}>Password</Text>
-        <TextInput placeholder="Min 8 characters" secureTextEntry value={password} onChangeText={setPassword} style={inputStyle} />
+        <PasswordField placeholder="Min 8 characters" value={password} onChangeText={setPassword} />
       </View>
 
       {error ? <Text style={{ color: colors.rust }}>{error}</Text> : null}

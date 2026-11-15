@@ -3,6 +3,7 @@ import { ActivityIndicator, Pressable, Text, TextInput, View } from "react-nativ
 import { Link } from "expo-router";
 import { useAuth } from "../../src/context/AuthContext";
 import { ApiError } from "../../src/api/client";
+import { PasswordField } from "../../src/components/PasswordField";
 import { colors } from "../../src/theme";
 
 export default function LoginScreen() {
@@ -42,7 +43,7 @@ export default function LoginScreen() {
 
       <View style={{ gap: 6 }}>
         <Text style={{ fontWeight: "700", color: colors.ink }}>Password</Text>
-        <TextInput placeholder="Your password" secureTextEntry value={password} onChangeText={setPassword} style={inputStyle} />
+        <PasswordField placeholder="Your password" value={password} onChangeText={setPassword} />
       </View>
 
       {error ? <Text style={{ color: colors.rust }}>{error}</Text> : null}
