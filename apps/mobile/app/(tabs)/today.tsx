@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, Image, Pressable, Text, View } from "react-native";
+import { ActivityIndicator, Alert, FlatList, Image, Pressable, Text, TextInput, View } from "react-native";
 import { useFocusEffect, useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -18,7 +18,7 @@ import { useProfile } from "../../src/hooks/useProfile";
 import { ApiError } from "../../src/api/client";
 import { getMeals, deleteMeal } from "../../src/api/meals";
 import { getDateEvents } from "../../src/api/calendar";
-import { getWorkoutHistory } from "../../src/api/weightAndWorkouts";
+import { getWorkoutHistory, logWorkoutResult } from "../../src/api/weightAndWorkouts";
 import { AdBanner } from "../../src/components/AdBanner";
 import { NutritionFacts } from "../../src/components/NutritionFacts";
 import { Card } from "../../src/components/Card";
@@ -33,6 +33,9 @@ export default function TodayScreen() {
   const [loading, setLoading] = useState(true);
   const [dayError, setDayError] = useState<string | null>(null);
   const [showFullFacts, setShowFullFacts] = useState(false);
+  const [loggingResultFor, setLoggingResultFor] = useState<string | null>(null);
+  const [resultInput, setResultInput] = useState("");
+  const [savingResult, setSavingResult] = useState(false);
 
   const loadDay = useCallback(async () => {
     const date = todayKey();
@@ -53,6 +56,21 @@ export default function TodayScreen() {
       setLoading(false);
     }
   }, []);
+
+  async function submitWorkoutResult(label: string) {
+    if (!resultInput.trim()) return;
+    setSavingResult(true);
+    try {
+      await logWorkoutResult(label, todayKey(), resultInput.trim());
+      setLoggingResultFor(null);
+      setResultInput("");
+      await loadDay(); // refreshes workoutHistory so "Last time" picks it up immediately
+    } catch {
+      Alert.alert("Couldn't save", "Something went wrong logging that result — try again.");
+    } finally {
+      setSavingResult(false);
+    }
+  }
 
   useEffect(() => {
     if (needsOnboarding) router.replace("/onboarding");
@@ -161,6 +179,38 @@ export default function TodayScreen() {
                       </Text>
                     ) : null}
                     {i === 0 && firstPrevResult ? <Text style={{ color: colors.muted }}>Last time: {firstPrevResult}</Text> : null}
+
+                    {loggingResultFor === w.id ? (
+                      <View style={{ flexDirection: "row", gap: 6, marginTop: 4 }}>
+                        <TextInput
+                          value={resultInput}
+                          onChangeText={setResultInput}
+                          placeholder="e.g. 135 lb x 8, or 22:10"
+                          autoFocus
+                          style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 8, color: colors.ink, backgroundColor: colors.paper }}
+                        />
+                        <Pressable
+                          onPress={() => submitWorkoutResult(w.label)}
+                          disabled={savingResult}
+                          style={{ backgroundColor: colors.green, borderRadius: 8, paddingHorizontal: 12, alignItems: "center", justifyContent: "center" }}
+                        >
+                          {savingResult ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Save</Text>}
+                        </Pressable>
+                        <Pressable
+                          onPress={() => {
+                            setLoggingResultFor(null);
+                            setResultInput("");
+                          }}
+                          style={{ justifyContent: "center" }}
+                        >
+                          <Text style={{ color: colors.muted }}>Cancel</Text>
+                        </Pressable>
+                      </View>
+                    ) : (
+                      <Pressable onPress={() => setLoggingResultFor(w.id)} style={{ marginTop: 4 }}>
+                        <Text style={{ color: colors.primary, fontWeight: "600", fontSize: 13 }}>Log result</Text>
+                      </Pressable>
+                    )}
                   </View>
                 ))}
                 {todaysEating.map((e) => (

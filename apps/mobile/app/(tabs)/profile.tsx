@@ -1,10 +1,25 @@
-import React, { useState } from "react";
-import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, View } from "react-native";
+import React, { useEffect, useState } from "react";
+import { ActivityIndicator, Alert, Image, Pressable, ScrollView, Text, TextInput, View } from "react-native";
 import * as ImagePicker from "expo-image-picker";
-import { adjustedBmi, bmiCategory, BUILD_LABELS, cmToFtIn, computeBMI, kgToLb, MOTIVATION_MODES, type BmiPreference, type UnitPref } from "@nutrition-app/shared";
+import {
+  adjustedBmi,
+  bmiCategory,
+  BUILD_LABELS,
+  cmToFtIn,
+  computeBMI,
+  kgToLb,
+  lbToKg,
+  MOTIVATION_MODES,
+  todayKey,
+  type BmiPreference,
+  type UnitPref,
+  type WeightEntry,
+} from "@nutrition-app/shared";
 import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { analyzeBuildPhoto } from "../../src/api/ai";
+import { getBodyAnalysis } from "../../src/api/bodyAnalysis";
+import { getWeightLog, logWeight } from "../../src/api/weightAndWorkouts";
 import { useAuth } from "../../src/context/AuthContext";
 import { useEntitlement } from "../../src/context/EntitlementContext";
 import { registerForPushNotifications } from "../../src/services/notifications";
@@ -36,6 +51,31 @@ export default function ProfileScreen() {
   const [pendingHeightCm, setPendingHeightCm] = useState<number | null>(null);
   const [pendingWeightKg, setPendingWeightKg] = useState<number | null>(null);
   const [registeringPush, setRegisteringPush] = useState(false);
+  const [weightLog, setWeightLog] = useState<WeightEntry[]>([]);
+  const [newWeightInput, setNewWeightInput] = useState("");
+  const [loggingWeight, setLoggingWeight] = useState(false);
+
+  function refetchWeightLog() {
+    getWeightLog().then(setWeightLog).catch(() => {
+      /* non-fatal — the rest of Profile doesn't depend on this */
+    });
+  }
+
+  useEffect(refetchWeightLog, []);
+
+  useEffect(() => {
+    // The build-photo analysis is saved server-side (POST /ai/analyze-build-photo
+    // upserts it), but buildThumb/buildResult only ever lived in this
+    // screen's local state — so the photo-adjusted BMI silently reset to
+    // standard every time this screen remounted, even though the backend
+    // still had it. Restore it once on mount instead.
+    getBodyAnalysis().then((saved) => {
+      if (saved) {
+        setBuildThumb(saved.thumbUrl);
+        setBuildResult(saved);
+      }
+    });
+  }, []);
 
   if (error) {
     return (
@@ -121,6 +161,26 @@ export default function ProfileScreen() {
       Alert.alert("Something went wrong", "Couldn't save — try again.");
     } finally {
       setSavingHW(false);
+    }
+  }
+
+  async function submitWeightLog() {
+    const entered = Number(newWeightInput);
+    if (!entered || entered <= 0) {
+      Alert.alert("Enter a weight", "Type a number first.");
+      return;
+    }
+    const weightKg = profile!.unitPref === "imperial" ? lbToKg(entered) : entered;
+    setLoggingWeight(true);
+    try {
+      await logWeight(todayKey(), weightKg);
+      setNewWeightInput("");
+      refetchWeightLog();
+      await refetch(); // logWeight also mirrors onto profile.weightKg server-side
+    } catch {
+      Alert.alert("Couldn't log weight", "Something went wrong — try again.");
+    } finally {
+      setLoggingWeight(false);
     }
   }
 
@@ -211,6 +271,43 @@ export default function ProfileScreen() {
             </Text>
             <Text style={{ color: colors.muted, marginTop: 4 }}>Tap to edit</Text>
           </Pressable>
+        )}
+      </Card>
+
+      <Card title="Weight log" icon="trending-down-outline">
+        <View style={{ flexDirection: "row", gap: 8 }}>
+          <TextInput
+            value={newWeightInput}
+            onChangeText={setNewWeightInput}
+            keyboardType="decimal-pad"
+            placeholder={profile.unitPref === "imperial" ? "e.g. 150 (lb)" : "e.g. 68 (kg)"}
+            style={{ flex: 1, borderWidth: 1, borderColor: colors.line, borderRadius: 8, padding: 10, color: colors.ink, backgroundColor: colors.card }}
+          />
+          <Pressable
+            onPress={submitWeightLog}
+            disabled={loggingWeight}
+            style={{ backgroundColor: colors.ink, borderRadius: 8, paddingHorizontal: 16, alignItems: "center", justifyContent: "center" }}
+          >
+            {loggingWeight ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Log today</Text>}
+          </Pressable>
+        </View>
+
+        {weightLog.length > 0 ? (
+          <View style={{ gap: 4, marginTop: 10 }}>
+            {[...weightLog]
+              .reverse()
+              .slice(0, 10)
+              .map((entry) => (
+                <View key={entry.id} style={{ flexDirection: "row", justifyContent: "space-between" }}>
+                  <Text style={{ color: colors.muted }}>{entry.date}</Text>
+                  <Text style={{ color: colors.ink, fontWeight: "600" }}>
+                    {profile.unitPref === "imperial" ? `${Math.round(kgToLb(entry.weightKg))} lb` : `${Math.round(entry.weightKg)} kg`}
+                  </Text>
+                </View>
+              ))}
+          </View>
+        ) : (
+          <Text style={{ color: colors.muted, marginTop: 8 }}>No entries yet — log today's weight to start tracking.</Text>
         )}
       </Card>
 
