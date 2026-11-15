@@ -18,6 +18,12 @@
         "EXPO_PUBLIC_API_URL": "https://nutrition-tracker-api-1q33.onrender.com"
       }
     },
+    "preview-apk": {
+      "extends": "preview",
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "production": {
       "autoIncrement": true,
       "channel": "production",
