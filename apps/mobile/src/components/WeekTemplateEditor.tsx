@@ -185,19 +185,25 @@ function EatingPresetPicker({ onApplied }: { onApplied: () => void }) {
 
 /** Stamps the same workout onto all 7 template days — for a varied per-day split, use the Trainer tab's plan builder instead. */
 function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
-  const [label, setLabel] = useState("Workout");
+  const [label, setLabel] = useState("");
   const [startTime, setStartTime] = useState("07:00");
   const [durationMin, setDurationMin] = useState("60");
   const [applying, setApplying] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   async function apply() {
+    if (!label.trim()) {
+      setError("Give it a label (e.g. Leg day) so it shows as more than just \"Workout\".");
+      return;
+    }
+    setError(null);
     const minutes = Number(durationMin) || 60;
     setApplying(true);
     try {
       const events = Array.from({ length: 7 }, (_, day) => ({
         day,
         type: "workout" as const,
-        label,
+        label: label.trim(),
         startTime,
         endTime: addHoursToTime(startTime, minutes / 60),
         notifyStart: true,
@@ -213,7 +219,8 @@ function WorkoutQuickAddPicker({ onApplied }: { onApplied: () => void }) {
 
   return (
     <Card title="Apply the same workout to every day" icon="barbell-outline">
-      <TextInput value={label} onChangeText={setLabel} style={inputStyle} placeholder="Workout label" />
+      <TextInput value={label} onChangeText={setLabel} style={inputStyle} placeholder="e.g. Leg day" />
+      {error ? <Text style={{ color: colors.rust, fontSize: 13 }}>{error}</Text> : null}
       <View style={{ flexDirection: "row", gap: 10 }}>
         <View style={{ flex: 1, gap: 4 }}>
           <Text style={{ color: colors.muted, fontSize: 12 }}>Start (HH:MM)</Text>

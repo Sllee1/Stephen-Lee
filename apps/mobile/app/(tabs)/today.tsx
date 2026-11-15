@@ -4,6 +4,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import {
   coachBubbleMessage,
   computeTargets,
+  formatTime,
   getPreviousResult,
   prettyDate,
   sumNutrients,
@@ -127,6 +128,12 @@ export default function TodayScreen() {
               <View style={{ backgroundColor: colors.card, borderRadius: 14, padding: 14, gap: 4, ...cardShadow }}>
                 <Text style={{ fontWeight: "700", color: colors.green }}>Today's workout</Text>
                 <Text style={{ color: colors.ink }}>{todaysWorkout.label}</Text>
+                {todaysWorkout.startTime ? (
+                  <Text style={{ color: colors.muted }}>
+                    {formatTime(todaysWorkout.startTime)}
+                    {todaysWorkout.endTime ? ` – ${formatTime(todaysWorkout.endTime)}` : ""}
+                  </Text>
+                ) : null}
                 {prevResult ? <Text style={{ color: colors.muted }}>Last time: {prevResult}</Text> : null}
               </View>
             ) : null}
