@@ -68,6 +68,14 @@ const PRIVACY_BODY = `
 <h2>Your choices</h2>
 <ul>
   <li><strong>Delete your account</strong> any time from Profile → Delete account. This permanently removes your profile, logged meals/photos, workout and weight history, and calendar — immediately, not after a delay. It does not cancel an active subscription; manage that from Profile → Manage subscription, or directly in the App Store/Play Store.</li>
+  <li><strong>Delete specific data without deleting your account:</strong>
+    <ul>
+      <li><em>Meals:</em> open the meal on the Today tab and remove it, or remove individual items before saving a new one.</li>
+      <li><em>Weight log:</em> Profile → Weight log → "Clear weight log" (tap twice to confirm) deletes your entire weight history, immediately.</li>
+      <li><em>Calendar:</em> delete a single event from any date on the Plan tab, or use "Clear entire calendar" (tap twice to confirm) to remove everything at once, immediately.</li>
+    </ul>
+    For any other data not covered by an in-app control yet, email <a href="mailto:${CONTACT_EMAIL}">${CONTACT_EMAIL}</a> and we'll delete it manually, typically within a few business days.
+  </li>
   <li><strong>Ad personalization:</strong> you control this through the consent/tracking prompt shown on first launch, and can change it later in your device's privacy settings.</li>
   <li><strong>Notifications:</strong> can be disabled any time in your device's notification settings.</li>
 </ul>
