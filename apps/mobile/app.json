@@ -12,7 +12,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.nutritiontracker.app",
+      "bundleIdentifier": "com.otashealth.app",
       "infoPlist": {
         "NSCameraUsageDescription": "Used to photograph meals for nutrition analysis, log a build photo for a BMI estimate, and record technique-check videos.",
         "NSPhotoLibraryUsageDescription": "Used to pick meal, build, or technique-check photos/videos from your library.",
@@ -20,7 +20,7 @@
       }
     },
     "android": {
-      "package": "com.nutritiontracker.app",
+      "package": "com.otashealth.app",
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
