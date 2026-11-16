@@ -1,40 +1,36 @@
-import nodemailer from "nodemailer";
 import { env } from "../env.js";
 
-// Sends via the account's own Gmail SMTP relay using an App Password,
-// rather than a transactional email provider — no domain to verify,
-// works with a plain Gmail account (fine for low volume; Gmail caps
-// regular accounts at ~500 sends/day). Transporter is created lazily and
-// reused across calls rather than per-send.
-let transporter: ReturnType<typeof nodemailer.createTransport> | null = null;
+const SENDGRID_URL = "https://api.sendgrid.com/v3/mail/send";
 
-function getTransporter() {
-  if (!transporter) {
-    transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: { user: env.GMAIL_USER, pass: env.GMAIL_APP_PASSWORD },
-    });
-  }
-  return transporter;
-}
-
+// Sends via SendGrid's HTTP API rather than raw SMTP — Render's free web
+// service plan blocks all outbound SMTP ports (25/465/587), but plain
+// HTTPS calls (same as every other integration here: Anthropic, USDA,
+// RevenueCat) work fine. Pairs with SendGrid's Single Sender
+// Verification, which needs only one verified email address, not a
+// whole domain.
 export async function sendEmail(to: string, subject: string, html: string): Promise<void> {
-  if (!env.GMAIL_USER || !env.GMAIL_APP_PASSWORD) {
+  if (!env.SENDGRID_API_KEY || !env.SENDGRID_FROM_EMAIL) {
     // eslint-disable-next-line no-console
-    console.warn(`[email] GMAIL_USER/GMAIL_APP_PASSWORD not configured — skipping send to ${to}: ${subject}`);
+    console.warn(`[email] SENDGRID_API_KEY/SENDGRID_FROM_EMAIL not configured — skipping send to ${to}: ${subject}`);
     return;
   }
 
-  // nodemailer's sendMail() can resolve successfully even when the
-  // recipient was rejected (see info.rejected) — logging the full
-  // response is the only way to actually tell "accepted" from "silently
-  // dropped" rather than just "didn't throw".
-  const info = await getTransporter().sendMail({
-    from: env.GMAIL_USER,
-    to,
-    subject,
-    html,
+  const response = await fetch(SENDGRID_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${env.SENDGRID_API_KEY}`,
+    },
+    body: JSON.stringify({
+      personalizations: [{ to: [{ email: to }] }],
+      from: { email: env.SENDGRID_FROM_EMAIL },
+      subject,
+      content: [{ type: "text/html", value: html }],
+    }),
   });
-  // eslint-disable-next-line no-console
-  console.log(`[email] sendMail result for ${to}:`, JSON.stringify({ messageId: info.messageId, accepted: info.accepted, rejected: info.rejected, response: info.response }));
+
+  if (!response.ok) {
+    const body = await response.text().catch(() => "");
+    throw new Error(`SendGrid send failed: ${response.status} ${body}`);
+  }
 }
