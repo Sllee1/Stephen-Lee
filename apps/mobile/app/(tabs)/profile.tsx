@@ -19,13 +19,14 @@ import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { analyzeBuildPhoto } from "../../src/api/ai";
 import { getBodyAnalysis } from "../../src/api/bodyAnalysis";
-import { getWeightLog, logWeight } from "../../src/api/weightAndWorkouts";
+import { clearWeightLog, getWeightLog, logWeight } from "../../src/api/weightAndWorkouts";
 import { useAuth } from "../../src/context/AuthContext";
 import { useEntitlement } from "../../src/context/EntitlementContext";
 import { registerForPushNotifications } from "../../src/services/notifications";
 import { PAYWALL_RESULT, presentCustomerCenter, presentPaywall } from "../../src/services/subscriptions";
 import { Card } from "../../src/components/Card";
 import { HeightWeightFields } from "../../src/components/HeightWeightFields";
+import { AdBanner } from "../../src/components/AdBanner";
 import { colors, colorForBmiCategory } from "../../src/theme";
 
 function formatHeightWeight(heightCm: number, weightKg: number, unitPref: UnitPref): string {
@@ -54,6 +55,9 @@ export default function ProfileScreen() {
   const [weightLog, setWeightLog] = useState<WeightEntry[]>([]);
   const [newWeightInput, setNewWeightInput] = useState("");
   const [loggingWeight, setLoggingWeight] = useState(false);
+  const [showAllWeights, setShowAllWeights] = useState(false);
+  const [clearingWeightLog, setClearingWeightLog] = useState(false);
+  const [confirmClearWeightLog, setConfirmClearWeightLog] = useState(false);
 
   function refetchWeightLog() {
     getWeightLog().then(setWeightLog).catch(() => {
@@ -184,6 +188,23 @@ export default function ProfileScreen() {
     }
   }
 
+  function handleClearWeightLogPress() {
+    if (!confirmClearWeightLog) {
+      setConfirmClearWeightLog(true);
+      setTimeout(() => setConfirmClearWeightLog(false), 4000);
+      return;
+    }
+    setClearingWeightLog(true);
+    clearWeightLog()
+      .then(() => {
+        setWeightLog([]);
+        setShowAllWeights(false);
+        setConfirmClearWeightLog(false);
+      })
+      .catch(() => Alert.alert("Couldn't clear weight log", "Something went wrong — try again."))
+      .finally(() => setClearingWeightLog(false));
+  }
+
   async function upgradeToPremium() {
     setPurchasing(true);
     try {
@@ -235,7 +256,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 20 }}>
+    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 20 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Profile</Text>
 
       <Card title="Height & weight" icon="body-outline">
@@ -296,7 +318,7 @@ export default function ProfileScreen() {
           <View style={{ gap: 4, marginTop: 10 }}>
             {[...weightLog]
               .reverse()
-              .slice(0, 10)
+              .slice(0, showAllWeights ? undefined : 5)
               .map((entry) => (
                 <View key={entry.id} style={{ flexDirection: "row", justifyContent: "space-between" }}>
                   <Text style={{ color: colors.muted }}>{entry.date}</Text>
@@ -305,6 +327,24 @@ export default function ProfileScreen() {
                   </Text>
                 </View>
               ))}
+
+            {weightLog.length > 5 ? (
+              <Pressable onPress={() => setShowAllWeights((v) => !v)} style={{ paddingVertical: 8 }}>
+                <Text style={{ color: colors.primary, fontWeight: "600" }}>
+                  {showAllWeights ? "Show less" : `Show all ${weightLog.length} entries`}
+                </Text>
+              </Pressable>
+            ) : null}
+
+            <Pressable onPress={handleClearWeightLogPress} disabled={clearingWeightLog} style={{ paddingVertical: 8, marginTop: 4 }}>
+              {clearingWeightLog ? (
+                <ActivityIndicator color={colors.rust} />
+              ) : (
+                <Text style={{ color: colors.rust, fontWeight: "600" }}>
+                  {confirmClearWeightLog ? "Tap again to confirm — clears all weight entries" : "Clear weight log"}
+                </Text>
+              )}
+            </Pressable>
           </View>
         ) : (
           <Text style={{ color: colors.muted, marginTop: 8 }}>No entries yet — log today's weight to start tracking.</Text>
@@ -400,5 +440,7 @@ export default function ProfileScreen() {
         {deleting ? <ActivityIndicator color={colors.muted} /> : <Text style={{ color: colors.muted, fontWeight: "600", textDecorationLine: "underline" }}>Delete account</Text>}
       </Pressable>
     </ScrollView>
+      <AdBanner />
+    </View>
   );
 }

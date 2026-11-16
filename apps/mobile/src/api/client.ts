@@ -66,36 +66,53 @@ export class ApiError extends Error {
 // covers a cold start; past that, fail clearly instead of hanging forever.
 const REQUEST_TIMEOUT_MS = 20000;
 
+// A plain fetch() failure (as opposed to our own timeout abort) usually
+// means the OS network/DNS stack wasn't fully up yet right at app launch,
+// or a momentary mobile-network blip — not a real outage. Users reported
+// "network error on login/open, but it works if I retry" — this retries
+// that exact case automatically a couple of times before surfacing an
+// error, so the user doesn't have to do it by hand.
+const NETWORK_ERROR_RETRIES = 2;
+const NETWORK_ERROR_RETRY_DELAY_MS = 800;
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const token = await getToken();
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
 
-  let response: Response;
-  try {
-    response = await fetch(`${API_URL}${path}`, {
-      ...options,
-      signal: controller.signal,
-      headers: {
-        ...(options.body ? { "Content-Type": "application/json" } : {}),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...options.headers,
-      },
-    });
-  } catch (err) {
-    if (err instanceof Error && err.name === "AbortError") {
-      throw new ApiError(0, "Request timed out — check your connection and try again.");
+  for (let attempt = 0; ; attempt++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
+    let response: Response;
+    try {
+      response = await fetch(`${API_URL}${path}`, {
+        ...options,
+        signal: controller.signal,
+        headers: {
+          ...(options.body ? { "Content-Type": "application/json" } : {}),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...options.headers,
+        },
+      });
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        throw new ApiError(0, "Request timed out — check your connection and try again.");
+      }
+      if (attempt < NETWORK_ERROR_RETRIES) {
+        clearTimeout(timer);
+        await new Promise((r) => setTimeout(r, NETWORK_ERROR_RETRY_DELAY_MS * (attempt + 1)));
+        continue;
+      }
+      throw new ApiError(0, "Network error — check your connection and try again.");
+    } finally {
+      clearTimeout(timer);
     }
-    throw new ApiError(0, "Network error — check your connection and try again.");
-  } finally {
-    clearTimeout(timer);
-  }
 
-  if (!response.ok) {
-    const body = await response.json().catch(() => ({ error: response.statusText }));
-    throw new ApiError(response.status, body.error ?? "Request failed");
-  }
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({ error: response.statusText }));
+      throw new ApiError(response.status, body.error ?? "Request failed");
+    }
 
-  if (response.status === 204) return undefined as T;
-  return response.json() as Promise<T>;
+    if (response.status === 204) return undefined as T;
+    return response.json() as Promise<T>;
+  }
 }

@@ -8,6 +8,7 @@ import { analyzeFoodPhoto } from "../../src/api/ai";
 import { createMeal } from "../../src/api/meals";
 import { FoodPicker } from "../../src/components/FoodPicker";
 import { NutritionFacts } from "../../src/components/NutritionFacts";
+import { AdBanner } from "../../src/components/AdBanner";
 import { cardShadow, colors } from "../../src/theme";
 
 /**
@@ -93,7 +94,8 @@ export default function LogScreen() {
   const totalCalories = items.reduce((sum, i) => sum + i.calories, 0);
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: colors.paper }} contentContainerStyle={{ padding: 20, gap: 16 }}>
+    <View style={{ flex: 1, backgroundColor: colors.paper }}>
+    <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, gap: 16 }}>
       <Text style={{ fontSize: 24, fontWeight: "800", color: colors.ink }}>Log a meal</Text>
 
       {imageUri ? <Image source={{ uri: imageUri }} style={{ width: "100%", height: 200, borderRadius: 12 }} /> : null}
@@ -128,6 +130,8 @@ export default function LogScreen() {
         </View>
       ) : null}
 
+    </ScrollView>
+      <AdBanner />
       <Modal visible={showPicker} animationType="slide" onRequestClose={() => setShowPicker(false)}>
         <FoodPicker
           onAdd={(item) => {
@@ -137,7 +141,7 @@ export default function LogScreen() {
           onClose={() => setShowPicker(false)}
         />
       </Modal>
-    </ScrollView>
+    </View>
   );
 }
 

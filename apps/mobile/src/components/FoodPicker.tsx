@@ -124,7 +124,7 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
           setSelected(null);
         }}
         placeholder="Search foods (e.g. chicken breast)"
-        style={inputStyle}
+        style={bigInputStyle}
       />
 
       {localResults.length > 0 && !selected ? (
@@ -133,9 +133,9 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
             <Pressable
               key={food.name}
               onPress={() => setSelected(food)}
-              style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12 }}
+              style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 16 }}
             >
-              <Text style={{ fontWeight: "600", color: colors.ink }}>{food.name}</Text>
+              <Text style={{ fontWeight: "600", color: colors.ink, fontSize: 16 }}>{food.name}</Text>
               <Text style={{ color: colors.muted }}>{food.serving} · {food.calories} cal</Text>
             </Pressable>
           ))}
@@ -159,9 +159,9 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
               <Pressable
                 key={food.fdcId}
                 onPress={() => setSelected(food)}
-                style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12 }}
+                style={{ backgroundColor: colors.card, borderWidth: 1, borderColor: colors.line, borderRadius: 12, padding: 16 }}
               >
-                <Text style={{ fontWeight: "600", color: colors.ink }}>{food.name}</Text>
+                <Text style={{ fontWeight: "600", color: colors.ink, fontSize: 16 }}>{food.name}</Text>
                 <Text style={{ color: colors.muted }}>per {food.serving} · {Math.round(food.calories)} cal</Text>
               </Pressable>
             ))
@@ -175,13 +175,13 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
 
       {selected && preview ? (
         <Card title={selected.name} icon="nutrition-outline">
-          <View style={{ flexDirection: "row", alignItems: "center", gap: 12 }}>
+          <View style={{ flexDirection: "row", alignItems: "center", gap: 16 }}>
             <Pressable onPress={() => setServings((s) => Math.max(0.5, s - 0.5))} style={stepperButtonStyle}>
-              <Text style={{ color: colors.ink, fontWeight: "800" }}>−</Text>
+              <Text style={{ color: colors.ink, fontWeight: "800", fontSize: 18 }}>−</Text>
             </Pressable>
-            <Text style={{ color: colors.ink, fontWeight: "600" }}>{servings} × {selected.serving}</Text>
+            <Text style={{ color: colors.ink, fontWeight: "600", fontSize: 16 }}>{servings} × {selected.serving}</Text>
             <Pressable onPress={() => setServings((s) => s + 0.5)} style={stepperButtonStyle}>
-              <Text style={{ color: colors.ink, fontWeight: "800" }}>+</Text>
+              <Text style={{ color: colors.ink, fontWeight: "800", fontSize: 18 }}>+</Text>
             </Pressable>
           </View>
 
@@ -189,8 +189,8 @@ function QuickAdd({ onAdd }: { onAdd: (item: MealItem) => void }) {
             {preview.calories} cal · P{preview.protein_g}g C{preview.carbs_g}g F{preview.fat_g}g
           </Text>
 
-          <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 12, alignItems: "center" }}>
-            <Text style={{ color: colors.paper, fontWeight: "700" }}>Add to meal</Text>
+          <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 12, padding: 18, alignItems: "center" }}>
+            <Text style={{ color: colors.paper, fontWeight: "700", fontSize: 17 }}>Add to meal</Text>
           </Pressable>
         </Card>
       ) : null}
@@ -244,11 +244,11 @@ function AiLookup({ onAdd }: { onAdd: (item: MealItem) => void }) {
 
   return (
     <View style={{ gap: 12 }}>
-      <TextInput value={name} onChangeText={setName} placeholder="Food name (e.g. tempeh stir-fry)" style={inputStyle} />
-      <TextInput value={servingHint} onChangeText={setServingHint} placeholder="Serving (optional, e.g. 1 cup)" style={inputStyle} />
+      <TextInput value={name} onChangeText={setName} placeholder="Food name (e.g. tempeh stir-fry)" style={bigInputStyle} />
+      <TextInput value={servingHint} onChangeText={setServingHint} placeholder="Serving (optional, e.g. 1 cup)" style={bigInputStyle} />
 
-      <Pressable onPress={lookup} disabled={looking} style={{ backgroundColor: colors.ink, borderRadius: 10, padding: 12, alignItems: "center" }}>
-        {looking ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700" }}>Look up nutrition</Text>}
+      <Pressable onPress={lookup} disabled={looking} style={{ backgroundColor: colors.ink, borderRadius: 12, padding: 18, alignItems: "center" }}>
+        {looking ? <ActivityIndicator color={colors.paper} /> : <Text style={{ color: colors.paper, fontWeight: "700", fontSize: 17 }}>Look up nutrition</Text>}
       </Pressable>
 
       {result ? (
@@ -256,13 +256,13 @@ function AiLookup({ onAdd }: { onAdd: (item: MealItem) => void }) {
           {!result.found ? <Text style={{ color: colors.amber }}>Not confident this is a real food — double check before adding.</Text> : null}
           <Text style={{ color: colors.muted }}>Serving used: {result.serving}</Text>
 
-          <MacroField label="Calories" value={editable.calories} onChangeText={(v) => setEditable((e) => ({ ...e, calories: v }))} />
-          <MacroField label="Protein (g)" value={editable.protein_g} onChangeText={(v) => setEditable((e) => ({ ...e, protein_g: v }))} />
-          <MacroField label="Carbs (g)" value={editable.carbs_g} onChangeText={(v) => setEditable((e) => ({ ...e, carbs_g: v }))} />
-          <MacroField label="Fat (g)" value={editable.fat_g} onChangeText={(v) => setEditable((e) => ({ ...e, fat_g: v }))} />
+          <MacroField label="Calories" value={editable.calories} onChangeText={(v) => setEditable((e) => ({ ...e, calories: v }))} big />
+          <MacroField label="Protein (g)" value={editable.protein_g} onChangeText={(v) => setEditable((e) => ({ ...e, protein_g: v }))} big />
+          <MacroField label="Carbs (g)" value={editable.carbs_g} onChangeText={(v) => setEditable((e) => ({ ...e, carbs_g: v }))} big />
+          <MacroField label="Fat (g)" value={editable.fat_g} onChangeText={(v) => setEditable((e) => ({ ...e, fat_g: v }))} big />
 
-          <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 12, alignItems: "center" }}>
-            <Text style={{ color: colors.paper, fontWeight: "700" }}>Add to meal</Text>
+          <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 12, padding: 18, alignItems: "center" }}>
+            <Text style={{ color: colors.paper, fontWeight: "700", fontSize: 17 }}>Add to meal</Text>
           </Pressable>
         </View>
       ) : null}
@@ -330,15 +330,15 @@ function ModeChip({ label, active, onPress }: { label: string; active: boolean; 
       onPress={onPress}
       style={{
         flex: 1,
-        paddingVertical: 8,
-        borderRadius: 8,
+        paddingVertical: 12,
+        borderRadius: 10,
         alignItems: "center",
         borderWidth: 1,
         borderColor: colors.line,
         backgroundColor: active ? colors.ink : colors.card,
       }}
     >
-      <Text style={{ color: active ? colors.paper : colors.ink, fontWeight: "600", fontSize: 13 }}>{label}</Text>
+      <Text style={{ color: active ? colors.paper : colors.ink, fontWeight: "700", fontSize: 14 }}>{label}</Text>
     </Pressable>
   );
 }
@@ -363,9 +363,9 @@ const bigInputStyle = {
 };
 
 const stepperButtonStyle = {
-  width: 32,
-  height: 32,
-  borderRadius: 16,
+  width: 44,
+  height: 44,
+  borderRadius: 22,
   borderWidth: 1,
   borderColor: colors.line,
   alignItems: "center" as const,

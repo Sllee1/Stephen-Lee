@@ -9,6 +9,10 @@ export function logWeight(date: string, weightKg: number) {
   return api<WeightEntry>("/weight", { method: "POST", body: JSON.stringify({ date, weightKg }) });
 }
 
+export function clearWeightLog() {
+  return api<void>("/weight", { method: "DELETE" });
+}
+
 export function getWorkoutHistory() {
   return api<WorkoutResult[]>("/workouts/history");
 }

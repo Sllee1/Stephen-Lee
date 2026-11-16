@@ -28,4 +28,9 @@ export default async function weightRoutes(app: FastifyInstance) {
     ]);
     return entry;
   });
+
+  app.delete("/weight", async (request, reply) => {
+    await app.prisma.weightEntry.deleteMany({ where: { userId: request.userId } });
+    return reply.code(204).send();
+  });
 }
