@@ -18,7 +18,7 @@ import {
 import { useProfile } from "../../src/hooks/useProfile";
 import { saveProfile } from "../../src/api/profile";
 import { analyzeBuildPhoto } from "../../src/api/ai";
-import { getBodyAnalysis } from "../../src/api/bodyAnalysis";
+import { deleteBodyAnalysis, getBodyAnalysis } from "../../src/api/bodyAnalysis";
 import { clearWeightLog, getWeightLog, logWeight } from "../../src/api/weightAndWorkouts";
 import { useAuth } from "../../src/context/AuthContext";
 import { useEntitlement } from "../../src/context/EntitlementContext";
@@ -44,6 +44,7 @@ export default function ProfileScreen() {
   const [buildThumb, setBuildThumb] = useState<string | null>(null);
   const [buildResult, setBuildResult] = useState<{ build: string; bmiOffset: number; note: string } | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
+  const [removingBuildPhoto, setRemovingBuildPhoto] = useState(false);
   const [purchasing, setPurchasing] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editingHW, setEditingHW] = useState(false);
@@ -129,6 +130,23 @@ export default function ProfileScreen() {
 
   function setBmiPreference(pref: BmiPreference) {
     saveProfile({ bmiPreference: pref }).then(refetch);
+  }
+
+  async function removeBuildPhoto() {
+    setRemovingBuildPhoto(true);
+    try {
+      await deleteBodyAnalysis();
+      setBuildThumb(null);
+      setBuildResult(null);
+      if (profile!.bmiPreference === "adjusted") {
+        await saveProfile({ bmiPreference: "standard" });
+        await refetch();
+      }
+    } catch {
+      Alert.alert("Couldn't remove", "Something went wrong — try again.");
+    } finally {
+      setRemovingBuildPhoto(false);
+    }
   }
 
   async function enableNotifications() {
@@ -371,6 +389,16 @@ export default function ProfileScreen() {
         <Pressable onPress={captureBuildPhoto} disabled={analyzing} style={{ borderWidth: 1, borderColor: colors.line, borderRadius: 10, padding: 12, alignItems: "center", marginTop: 10 }}>
           {analyzing ? <ActivityIndicator color={colors.primary} /> : <Text style={{ color: colors.ink, fontWeight: "600" }}>Add a build photo for a more personal estimate</Text>}
         </Pressable>
+
+        {buildResult ? (
+          <Pressable onPress={removeBuildPhoto} disabled={removingBuildPhoto} style={{ alignItems: "center", marginTop: 10 }}>
+            {removingBuildPhoto ? (
+              <ActivityIndicator color={colors.rust} />
+            ) : (
+              <Text style={{ color: colors.rust, fontWeight: "600" }}>Remove build photo</Text>
+            )}
+          </Pressable>
+        ) : null}
       </Card>
 
       <Card title="Motivation mode" icon="flame-outline">

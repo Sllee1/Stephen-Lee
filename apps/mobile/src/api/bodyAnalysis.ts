@@ -12,3 +12,7 @@ export async function getBodyAnalysis(): Promise<SavedBodyAnalysis | null> {
     throw err;
   }
 }
+
+export function deleteBodyAnalysis() {
+  return api<void>("/body-analysis", { method: "DELETE" });
+}
