@@ -1,4 +1,5 @@
 import React from "react";
+import { Image, Text, View } from "react-native";
 import { Tabs } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import { colors } from "../../src/theme";
@@ -11,12 +12,21 @@ const ICONS: Record<string, keyof typeof Ionicons.glyphMap> = {
   profile: "person",
 };
 
+function HeaderTitle() {
+  return (
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <Image source={require("../../assets/icon.png")} style={{ width: 28, height: 28, borderRadius: 6 }} />
+      <Text style={{ color: colors.paper, fontWeight: "800", fontSize: 16 }}>OTAS Health & Fitness Planner</Text>
+    </View>
+  );
+}
+
 export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
         headerShown: true,
-        headerTitle: "OTAS Health & Fitness Planner",
+        headerTitle: () => <HeaderTitle />,
         headerTitleAlign: "center",
         headerStyle: { backgroundColor: colors.ink },
         headerTitleStyle: { color: colors.paper, fontWeight: "800", fontSize: 16 },
