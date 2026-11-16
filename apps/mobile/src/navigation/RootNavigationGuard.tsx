@@ -18,10 +18,21 @@ export function RootNavigationGuard({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (!ready) return;
     const inAuthGroup = segments[0] === "(auth)";
+    // Anything that isn't already inside the authenticated app itself —
+    // this is "(tabs)" or "onboarding" ("onboarding" is otherwise
+    // redirected to from inside "(tabs)/today", not handled here).
+    // Critically, this also covers segments[0] being undefined/"index":
+    // that's the bare "/" entry route every cold start lands on first —
+    // an authenticated returning user landed there too, but neither
+    // branch below used to cover it (inAuthGroup is false there, same as
+    // "(tabs)"), so the redirect never fired and "/" (just a spinner,
+    // see app/index.tsx) was the whole screen, forever, every time an
+    // already-logged-in user reopened the app.
+    const inAuthenticatedApp = segments[0] === "(tabs)" || segments[0] === "onboarding";
 
     if (!isAuthenticated && !inAuthGroup) {
       router.replace("/(auth)/login");
-    } else if (isAuthenticated && inAuthGroup) {
+    } else if (isAuthenticated && !inAuthenticatedApp) {
       router.replace("/(tabs)/today");
     }
   }, [ready, isAuthenticated, segments, router]);
