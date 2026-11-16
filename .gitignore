@@ -9,6 +9,7 @@ build/
 .expo/
 .expo-shared/
 web-build/
+apps/mobile/build-output/
 
 # env
 .env
