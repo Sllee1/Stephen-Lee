@@ -5,6 +5,7 @@ import type { FastifyInstance } from "fastify";
 import rateLimit from "@fastify/rate-limit";
 import { requireAuth } from "../middleware/requireAuth.js";
 import { sendEmail } from "../services/email.js";
+import { sendExpoPush } from "../services/notifications.js";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -75,14 +76,35 @@ export default async function authRoutes(app: FastifyInstance) {
         await scoped.prisma.passwordReset.create({
           data: { userId: user.id, codeHash: hashCode(code), expiresAt: new Date(Date.now() + RESET_CODE_TTL_MS) },
         });
-        try {
-          await sendEmail(
-            email,
-            "Your password reset code",
-            `<p>Your OTAS Health & Fitness Planner password reset code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you didn't request this, you can ignore this email.</p>`
-          );
-        } catch (err) {
-          scoped.log.error({ err }, "[auth] failed to send password reset email");
+
+        // Push is the primary channel — it's not subject to the email
+        // deliverability mess (Gmail/Yahoo/Microsoft's DKIM/DMARC
+        // requirements for bulk senders, which need domain ownership we
+        // don't have yet) and a push token persists independently of
+        // login state, so it still works for someone who's locked out.
+        // Email is only a fallback for a device with no push token on
+        // file (new install, notifications never granted/revoked).
+        const pushTokens = await scoped.prisma.pushToken.findMany({ where: { userId: user.id } });
+        if (pushTokens.length > 0) {
+          try {
+            await sendExpoPush(
+              pushTokens.map((t) => t.token),
+              "Password reset code",
+              `Your code is ${code}. It expires in 15 minutes.`
+            );
+          } catch (err) {
+            scoped.log.error({ err }, "[auth] failed to send password reset push");
+          }
+        } else {
+          try {
+            await sendEmail(
+              email,
+              "Your password reset code",
+              `<p>Your OTAS Health & Fitness Planner password reset code is <strong>${code}</strong>.</p><p>It expires in 15 minutes. If you didn't request this, you can ignore this email.</p>`
+            );
+          } catch (err) {
+            scoped.log.error({ err }, "[auth] failed to send password reset email");
+          }
         }
       }
 

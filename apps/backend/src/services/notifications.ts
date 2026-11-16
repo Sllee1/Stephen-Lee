@@ -17,7 +17,7 @@ const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
  * race on the same minute, which an in-memory Set can't guarantee across
  * processes.
  */
-async function sendExpoPush(tokens: string[], title: string, body: string) {
+export async function sendExpoPush(tokens: string[], title: string, body: string) {
   if (tokens.length === 0) return;
   await fetch(EXPO_PUSH_URL, {
     method: "POST",

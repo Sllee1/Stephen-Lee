@@ -7,9 +7,10 @@ import { PasswordField } from "../../src/components/PasswordField";
 import { colors } from "../../src/theme";
 
 /**
- * Two steps on one screen: request a 6-digit code by email, then enter it
- * with a new password. No deep link needed — simpler to get right on both
- * platforms than an emailed link into the app.
+ * Two steps on one screen: request a 6-digit code (delivered by push
+ * notification if a device has one registered, email otherwise), then
+ * enter it with a new password. No deep link needed — simpler to get
+ * right on both platforms than an emailed/pushed link into the app.
  */
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function ForgotPasswordScreen() {
     try {
       await requestPasswordReset(email.trim());
       setCodeRequested(true);
-      setInfo("If that email has an account, a 6-digit code is on its way — check your inbox.");
+      setInfo("If that email has an account, a 6-digit code is on its way — check your notifications (or your email inbox if you don't have the app's notifications enabled on this device).");
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Something went wrong — try again.");
     } finally {
@@ -45,7 +46,7 @@ export default function ForgotPasswordScreen() {
   async function handleReset() {
     setError(null);
     if (code.trim().length !== 6) {
-      setError("Enter the 6-digit code from the email.");
+      setError("Enter the 6-digit code.");
       return;
     }
     if (newPassword.length < 8) {
