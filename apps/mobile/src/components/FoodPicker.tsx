@@ -296,25 +296,30 @@ function ManualEntry({ onAdd }: { onAdd: (item: MealItem) => void }) {
   }
 
   return (
-    <View style={{ gap: 12 }}>
-      <TextInput value={name} onChangeText={setName} placeholder="What did you eat?" style={inputStyle} />
-      <MacroField label="Calories" value={calories} onChangeText={setCalories} />
-      <MacroField label="Protein (g)" value={protein} onChangeText={setProtein} />
-      <MacroField label="Carbs (g)" value={carbs} onChangeText={setCarbs} />
-      <MacroField label="Fat (g)" value={fat} onChangeText={setFat} />
-      <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 8, padding: 12, alignItems: "center" }}>
-        <Text style={{ color: colors.paper, fontWeight: "700" }}>Add to meal</Text>
+    <View style={{ gap: 14 }}>
+      <TextInput value={name} onChangeText={setName} placeholder="What did you eat?" style={bigInputStyle} />
+      <MacroField label="Calories" value={calories} onChangeText={setCalories} big />
+      <MacroField label="Protein (g)" value={protein} onChangeText={setProtein} big />
+      <MacroField label="Carbs (g)" value={carbs} onChangeText={setCarbs} big />
+      <MacroField label="Fat (g)" value={fat} onChangeText={setFat} big />
+      <Pressable onPress={add} style={{ backgroundColor: colors.green, borderRadius: 12, padding: 18, alignItems: "center" }}>
+        <Text style={{ color: colors.paper, fontWeight: "700", fontSize: 17 }}>Add to meal</Text>
       </Pressable>
       <Text style={{ color: colors.muted, fontSize: 12 }}>Other nutrients (fiber, sodium, vitamins, ...) default to 0 for manual entries.</Text>
     </View>
   );
 }
 
-function MacroField({ label, value, onChangeText }: { label: string; value: string; onChangeText: (v: string) => void }) {
+function MacroField({ label, value, onChangeText, big }: { label: string; value: string; onChangeText: (v: string) => void; big?: boolean }) {
   return (
     <View style={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-      <Text style={{ color: colors.ink }}>{label}</Text>
-      <TextInput value={value} onChangeText={onChangeText} keyboardType="decimal-pad" style={[inputStyle, { width: 100, textAlign: "right" }]} />
+      <Text style={{ color: colors.ink, fontSize: big ? 16 : 14, fontWeight: big ? "600" : "400" }}>{label}</Text>
+      <TextInput
+        value={value}
+        onChangeText={onChangeText}
+        keyboardType="decimal-pad"
+        style={big ? [bigInputStyle, { width: 120, textAlign: "right" }] : [inputStyle, { width: 100, textAlign: "right" }]}
+      />
     </View>
   );
 }
@@ -343,6 +348,16 @@ const inputStyle = {
   borderColor: colors.line,
   borderRadius: 8,
   padding: 10,
+  color: colors.ink,
+  backgroundColor: colors.card,
+};
+
+const bigInputStyle = {
+  borderWidth: 1,
+  borderColor: colors.line,
+  borderRadius: 12,
+  padding: 16,
+  fontSize: 16,
   color: colors.ink,
   backgroundColor: colors.card,
 };

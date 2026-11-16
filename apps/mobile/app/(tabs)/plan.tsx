@@ -97,11 +97,23 @@ function MonthCalendarView() {
   return (
     <View style={{ gap: 16 }}>
       <View style={{ flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-        <Pressable onPress={() => changeMonth(-1)}><Text style={{ fontSize: 18, color: colors.ink }}>‹</Text></Pressable>
+        <Pressable
+          onPress={() => changeMonth(-1)}
+          hitSlop={12}
+          style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.card, alignItems: "center", justifyContent: "center", ...cardShadow }}
+        >
+          <Text style={{ fontSize: 26, fontWeight: "800", color: colors.ink }}>‹</Text>
+        </Pressable>
         <Text style={{ fontSize: 20, fontWeight: "800", color: colors.ink }}>
           {new Date(year, month0, 1).toLocaleDateString(undefined, { month: "long", year: "numeric" })}
         </Text>
-        <Pressable onPress={() => changeMonth(1)}><Text style={{ fontSize: 18, color: colors.ink }}>›</Text></Pressable>
+        <Pressable
+          onPress={() => changeMonth(1)}
+          hitSlop={12}
+          style={{ width: 48, height: 48, borderRadius: 24, backgroundColor: colors.card, alignItems: "center", justifyContent: "center", ...cardShadow }}
+        >
+          <Text style={{ fontSize: 26, fontWeight: "800", color: colors.ink }}>›</Text>
+        </Pressable>
       </View>
 
       <View style={{ flexDirection: "row" }}>

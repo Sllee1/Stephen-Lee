@@ -15,7 +15,12 @@ export default function TabsLayout() {
   return (
     <Tabs
       screenOptions={({ route }) => ({
-        headerShown: false,
+        headerShown: true,
+        headerTitle: "OTAS Health & Fitness Planner",
+        headerTitleAlign: "center",
+        headerStyle: { backgroundColor: colors.ink },
+        headerTitleStyle: { color: colors.paper, fontWeight: "800", fontSize: 16 },
+        headerShadowVisible: false,
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.muted,
         tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line },
