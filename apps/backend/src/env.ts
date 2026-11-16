@@ -10,12 +10,13 @@ const schema = z.object({
   EXPO_ACCESS_TOKEN: z.string().optional(),
   REVENUECAT_WEBHOOK_SECRET: z.string().optional(),
   USDA_FDC_API_KEY: z.string().optional(),
-  // Optional so the API still starts without it — /auth/forgot-password
-  // just logs a warning and skips sending instead of failing (see
-  // services/email.ts). Without a verified domain on Resend, sends must
-  // come from their shared onboarding@resend.dev sender.
-  RESEND_API_KEY: z.string().optional(),
-  EMAIL_FROM: z.string().default("onboarding@resend.dev"),
+  // Sends go through Gmail SMTP using an account's App Password, rather
+  // than a transactional email provider — no domain to verify, works with
+  // a plain Gmail account. Optional so the API still starts without it;
+  // /auth/forgot-password just logs a warning and skips sending instead
+  // of failing (see services/email.ts).
+  GMAIL_USER: z.string().optional(),
+  GMAIL_APP_PASSWORD: z.string().optional(),
   PORT: z.coerce.number().default(4000),
 });
 
