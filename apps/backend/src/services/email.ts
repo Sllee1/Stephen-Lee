@@ -25,10 +25,16 @@ export async function sendEmail(to: string, subject: string, html: string): Prom
     return;
   }
 
-  await getTransporter().sendMail({
+  // nodemailer's sendMail() can resolve successfully even when the
+  // recipient was rejected (see info.rejected) — logging the full
+  // response is the only way to actually tell "accepted" from "silently
+  // dropped" rather than just "didn't throw".
+  const info = await getTransporter().sendMail({
     from: env.GMAIL_USER,
     to,
     subject,
     html,
   });
+  // eslint-disable-next-line no-console
+  console.log(`[email] sendMail result for ${to}:`, JSON.stringify({ messageId: info.messageId, accepted: info.accepted, rejected: info.rejected, response: info.response }));
 }
